@@ -56,6 +56,8 @@ too.
 Here’s a very simple story: three features are being added to the first release
 for the project.
 
+![](https://cdn-images-1.medium.com/max/1000/1*CWNU_TywRzVseG5jxctAFA.png)
+
 First, we start with our release branch: in this case, master. Feature branches
 get branched from the commit that contains the code they’re based on (check out
 infrastructure branches below for clarification on that), and merged into the
@@ -63,6 +65,8 @@ release line they’re targeted for. Once all the features are in, the branch ge
 tagged (the open dot on the above graph) with the full release version, and
 you’re off to the races. This extends nicely if you get more features before you
 have a release.
+
+![](https://cdn-images-1.medium.com/max/1000/1*JmAWFT-Q_rN-AIG2i0MN8w.png)
 
 Here, we also merged master back to feature-b; this is not mandatory, and
 actually can cause issues if you either need multiple future releases or aren’t
@@ -83,6 +87,8 @@ in agile, sometimes within a single sprint. When one feature is not quite done,
 but another developer is ready to start on a dependent feature, you don’t want
 your resources blocked: you want an incremental feature branch.
 
+![](https://cdn-images-1.medium.com/max/1000/1*SZYlvjh02vwAQU8zomewuA.png)
+
 Here, Feature B depends on Feature A, which isn’t done yet, but is complete
 enough for Feature B to start being worked on. As more progress is completed on
 Feature A, it gets merged into Feature B as needed.
@@ -93,6 +99,7 @@ because often developers will need a piece of infrastructure to complete several
 tasks, but the infrastructure provides no business value other than that, and
 can’t be QA tested on its own. As a result, infrastructure can look like this:
 
+![](https://cdn-images-1.medium.com/max/1000/1*exgNk_dDOu8Lu7q-HFbCsA.png)
 <span class="figcaption_hack">Pretty much the same as an incremental feature</span>
 
 This process keeps commits off of the release branches that don’t pertain to a
@@ -115,12 +122,14 @@ names don’t mean anything to git, so they can be changed at any time. However,
 they might mean something to your tooling, or to your developers, so let that be
 your primary concern. Make a new branch from the release at that time.
 
+![](https://cdn-images-1.medium.com/max/1000/1*yFa8AP88NWVLEAswmiBiuQ.png)
 <span class="figcaption_hack">It’s really that simple. Rename the branch later if you want.</span>
 
 Note that it’s “0.1.0”, the tag, that is actually released; the new branch has
 no tags, and so therefore is not yet released… but it is targeted as the next
 release. Any features outstanding can now be merged into the new release line.
 
+![](https://cdn-images-1.medium.com/max/1000/1*vjaDY-zn5n12KkzbSe8IwQ.png)
 <span class="figcaption_hack">Note that other than making a new release branch, this is identical to our
 three-feature diagram above. As a result, conflicts remain minimal.</span>
 
@@ -131,10 +140,14 @@ you don’t want a feature to accidentally go with an earlier release. However, 
 does reduce cognitive load on devs, and can be done just before a release tag to
 start a feature freeze.
 
+![](https://cdn-images-1.medium.com/max/1000/1*dD83GsaJVUdK1bbtURMLDw.png)
+
 #### Hot fixes
 
 As soon as you have back releases, you’re going to need to patch those back
 releases.
+
+![](https://cdn-images-1.medium.com/max/1000/1*QutBQkMNdtra8NGv8W04UQ.png)
 
 The hotfix gets branched from the oldest release where the patch needs to be
 applied, then merged back into that same release line. Note that the release
@@ -156,6 +169,7 @@ previous projects, which is why I know it’s a mistake) is to merge the hotfix 
 each release line that it applies to rather than always merging from the parent
 release. For instance:
 
+![](https://cdn-images-1.medium.com/max/1000/1*mTVhZyTuA8HdIifV05E-zw.png)
 <span class="figcaption_hack">This is bad!</span>
 
 Why is this bad? 0.1.1 was not in 0.2 before, but it gets merged into 0.2 with
@@ -166,6 +180,8 @@ that, it could be months away, with a change in the dev team!
 
 Git is built specifically to handle these cases better than the preceeding
 versioning systems. So, please make sure your hotfix tree looks like this:
+
+![](https://cdn-images-1.medium.com/max/1000/1*-VEkzpicHphO4lXgfKOlIQ.png)
 
 #### Multiple Future Releases
 
@@ -183,6 +199,7 @@ when you pull a repository local, you’ve actually created dozens of branches
 already. Rather than trying to keep the commit history linear, embrace the
 multi-branching and use the inbuilt graphs in whatever tool you enjoy most.
 
+![](https://cdn-images-1.medium.com/max/1000/1*Zw8vQPkQzeFMQaECaLdjcw.png)
 <span class="figcaption_hack">That’s right, I use TortoiseGit.</span>
 
 Learn to understand the various merges and branches and you’ll be a lot happier.
@@ -205,8 +222,12 @@ Taking our infrastructure branch example, let’s add an extra commit that
 conflicts with Feature A to the release. A common practice is to pull the target
 release into the source branch as follows:
 
+![](https://cdn-images-1.medium.com/max/1000/1*LI8kJdlUSfzjvgVnvXDNeg.png)
+
 If the developers on Feature A choose instead to do a rebase, because the
 framework branch has not made it into master yet, it looks as follows.
+
+![](https://cdn-images-1.medium.com/max/1000/1*FVWq7TjNyi5roL-_yOnpyw.png)
 
 This will cause Feature B to have conflicts because the work will have been
 re-done in Feature A, rather than re-used. (Note that git is pretty smart and
@@ -226,6 +247,7 @@ but from different timestamps cause many issues.
 
 Let’s look at the hotfix example, with cherry-picking.
 
+![](https://cdn-images-1.medium.com/max/1000/1*Ip23ed1AnmX-ZeBhiOSTBw.png)
 <span class="figcaption_hack">Cherry picking is like redoing the work!</span>
 
 In this case, hotfix-1 again didn’t apply to 0.2, so it was left out, saving a
@@ -239,11 +261,13 @@ that the slight variations in the resolutions will introduce other issues,
 to track if a particular hotfix has been applied to a given release line,
 especially as you add more release lines.
 
+![](https://cdn-images-1.medium.com/max/1000/1*2N3FeTVSrFemSbPQl8CgJQ.png)
 <span class="figcaption_hack">If you really get into minimizing merges, your tree would look like this.</span>
 
 Again, git is specifically built to handle merges more safely than its
 predecessors: use the tool you’ve chosen! The safest way to handle it:
 
+![](https://cdn-images-1.medium.com/max/1000/1*iYRTyGlPI4z8rIdkdh-Nqg.png)
 <span class="figcaption_hack">Don’t forget that the extra merges can be automated!</span>
 
 ### Don’t use GitFlow
