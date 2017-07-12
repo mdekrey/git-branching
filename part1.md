@@ -99,8 +99,8 @@ because often developers will need a piece of infrastructure to complete several
 tasks, but the infrastructure provides no business value other than that, and
 can’t be QA tested on its own. As a result, infrastructure can look like this:
 
+###### Pretty much the same as an incremental feature
 ![](https://cdn-images-1.medium.com/max/1000/1*exgNk_dDOu8Lu7q-HFbCsA.png)
-<span class="figcaption_hack">Pretty much the same as an incremental feature</span>
 
 This process keeps commits off of the release branches that don’t pertain to a
 specific feature, keeping QA and overcontrolling managers happy. You also can
@@ -122,16 +122,16 @@ names don’t mean anything to git, so they can be changed at any time. However,
 they might mean something to your tooling, or to your developers, so let that be
 your primary concern. Make a new branch from the release at that time.
 
+###### It’s really that simple. Rename the branch later if you want.
 ![](https://cdn-images-1.medium.com/max/1000/1*yFa8AP88NWVLEAswmiBiuQ.png)
-<span class="figcaption_hack">It’s really that simple. Rename the branch later if you want.</span>
 
 Note that it’s “0.1.0”, the tag, that is actually released; the new branch has
 no tags, and so therefore is not yet released… but it is targeted as the next
 release. Any features outstanding can now be merged into the new release line.
 
+###### Note that other than making a new release branch, this is identical to our
+three-feature diagram above. As a result, conflicts remain minimal.
 ![](https://cdn-images-1.medium.com/max/1000/1*vjaDY-zn5n12KkzbSe8IwQ.png)
-<span class="figcaption_hack">Note that other than making a new release branch, this is identical to our
-three-feature diagram above. As a result, conflicts remain minimal.</span>
 
 A variant is to always call the latest release line  and create new branches for
 older releases; I personally dislike this because it causes a slightly different
@@ -169,8 +169,8 @@ previous projects, which is why I know it’s a mistake) is to merge the hotfix 
 each release line that it applies to rather than always merging from the parent
 release. For instance:
 
+###### This is bad!
 ![](https://cdn-images-1.medium.com/max/1000/1*mTVhZyTuA8HdIifV05E-zw.png)
-<span class="figcaption_hack">This is bad!</span>
 
 Why is this bad? 0.1.1 was not in 0.2 before, but it gets merged into 0.2 with
 hotfix-2. If there were serious merge conflicts with hotfix-1 like we described
@@ -199,8 +199,8 @@ when you pull a repository local, you’ve actually created dozens of branches
 already. Rather than trying to keep the commit history linear, embrace the
 multi-branching and use the inbuilt graphs in whatever tool you enjoy most.
 
+###### That’s right, I use TortoiseGit.
 ![](https://cdn-images-1.medium.com/max/1000/1*Zw8vQPkQzeFMQaECaLdjcw.png)
-<span class="figcaption_hack">That’s right, I use TortoiseGit.</span>
 
 Learn to understand the various merges and branches and you’ll be a lot happier.
 In this case, I really only need to look at the black squares for the actual
@@ -247,8 +247,8 @@ but from different timestamps cause many issues.
 
 Let’s look at the hotfix example, with cherry-picking.
 
+###### Cherry picking is like redoing the work!
 ![](https://cdn-images-1.medium.com/max/1000/1*Ip23ed1AnmX-ZeBhiOSTBw.png)
-<span class="figcaption_hack">Cherry picking is like redoing the work!</span>
 
 In this case, hotfix-1 again didn’t apply to 0.2, so it was left out, saving a
 bit of work. However, after that, we needed to create a branch, cherry-pick out
@@ -261,14 +261,14 @@ that the slight variations in the resolutions will introduce other issues,
 to track if a particular hotfix has been applied to a given release line,
 especially as you add more release lines.
 
+###### If you really get into minimizing merges, your tree would look like this.
 ![](https://cdn-images-1.medium.com/max/1000/1*2N3FeTVSrFemSbPQl8CgJQ.png)
-<span class="figcaption_hack">If you really get into minimizing merges, your tree would look like this.</span>
 
 Again, git is specifically built to handle merges more safely than its
 predecessors: use the tool you’ve chosen! The safest way to handle it:
 
+###### Don’t forget that the extra merges can be automated!
 ![](https://cdn-images-1.medium.com/max/1000/1*iYRTyGlPI4z8rIdkdh-Nqg.png)
-<span class="figcaption_hack">Don’t forget that the extra merges can be automated!</span>
 
 ### Don’t use GitFlow
 
