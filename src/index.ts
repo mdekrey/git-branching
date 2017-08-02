@@ -31,10 +31,10 @@ const releaseColors = [
 interface IGitGraphOptions {
   template?: "metro" | "blackarrow";
   orientation?:
-    | "vertical-reverse"
-    | "horizontal"
-    | "horizontal-reverse"
-    | "vertical";
+  | "vertical-reverse"
+  | "horizontal"
+  | "horizontal-reverse"
+  | "vertical";
   mode?: "compact" | "extended";
   elementId: string;
   author?: string;
@@ -122,6 +122,7 @@ function makeGraph(elementId: string, initialBranches: IInitialRef[]) {
       defaultBranchTheme: {
         strokeWidth: 3,
         includeBranchStart: true,
+        includeMergeTime: true,
         ...branchColors(releaseColors[0])
       }
     },
@@ -1011,3 +1012,5 @@ threeHotfixCherryPick("threeHotfixCherryPick", "compact");
 threeHotfixCherryPickDirect("threeHotfixCherryPickDirect", "compact");
 threeHotfixGoodRelease("threeHotfixGoodRelease", "compact");
 fullFeature("fullFeature", "compact");
+
+prettier("prettier", "compact");

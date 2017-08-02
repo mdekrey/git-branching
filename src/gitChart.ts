@@ -19,6 +19,7 @@ export interface BranchTheme {
   defaultCommitTheme: CommitTheme;
   strokeWidth: number;
   includeBranchStart: boolean;
+  includeMergeTime: boolean;
 }
 
 export interface CommitTheme {
@@ -71,7 +72,7 @@ export class GitRepository {
   private readonly currentRefs = new Map<
     string,
     { ref: Ref; current: Commit | null; labelled: boolean }
-  >();
+    >();
   private readonly tags = new Map<string, Commit>();
   private currentTime = 0;
 
@@ -145,8 +146,8 @@ export class GitRepository {
       branchName,
       row === undefined
         ? Math.max(
-            ...Array.from(this.currentRefs.values()).map(v => v.ref.row)
-          ) + 1
+          ...Array.from(this.currentRefs.values()).map(v => v.ref.row)
+        ) + 1
         : row,
       finalTheme,
       current
@@ -226,11 +227,21 @@ export class GitRepository {
     if (!ref) {
       throw new Error(`Ref ${branchName} does not exist.`);
     }
-    const otherRef = this.currentRefs.get(otherBranch);
+    let otherRef = this.currentRefs.get(otherBranch);
     if (!otherRef) {
       throw new Error(`Ref ${otherBranch} does not exist.`);
     }
 
+
+    this.currentTime -= 0.5;
+    if (otherRef.ref.theme.includeBranchStart) {
+      this.commit(otherBranch, {
+        fillColor: transparent,
+        strokeColor: transparent
+      });
+      this.currentTime -= 0.5;
+      otherRef = this.currentRefs.get(otherBranch)!;
+    }
     const finalTheme = Object.assign(
       {},
       ref.ref.theme.defaultCommitTheme,
@@ -282,27 +293,27 @@ export class GitRepository {
       parent.commit
         ? commitToTimeDistance(parent.commit)
         : {
-            time: 0,
-            row: parent.child.row + 0.5
-          };
+          time: 0,
+          row: parent.child.row + 0.5
+        };
 
     this.element
       .style(
-        "height",
-        y({ time: maxTime + 1, row: maxRow + 1 }) +
-          this.chartTheme.padding.y * 2
+      "height",
+      y({ time: maxTime + 1, row: maxRow + 1 }) +
+      this.chartTheme.padding.y * 2
       )
       .style(
-        "width",
-        x({ time: maxTime + 1, row: maxRow + 1 }) +
-          this.chartTheme.padding.x * 2
+      "width",
+      x({ time: maxTime + 1, row: maxRow + 1 }) +
+      this.chartTheme.padding.x * 2
       );
 
     const base = this.element
       .append<SVGGElement>("g")
       .attr(
-        "transform",
-        `translate(${this.chartTheme.padding.x} ${this.chartTheme.padding.y})`
+      "transform",
+      `translate(${this.chartTheme.padding.x} ${this.chartTheme.padding.y})`
       );
 
     bind({
@@ -377,14 +388,14 @@ export class GitRepository {
           .attr("font-size", commit => commit.theme.fontSize)
           .attr("font-family", commit => commit.theme.font)
           .attr(
-            "x",
-            commit =>
-              x(commitToTimeDistance(commit)) + commit.theme.textOffset.x
+          "x",
+          commit =>
+            x(commitToTimeDistance(commit)) + commit.theme.textOffset.x
           )
           .attr(
-            "y",
-            commit =>
-              y(commitToTimeDistance(commit)) + commit.theme.textOffset.y
+          "y",
+          commit =>
+            y(commitToTimeDistance(commit)) + commit.theme.textOffset.y
           )
     });
 
@@ -408,14 +419,14 @@ export class GitRepository {
           .attr("font-family", ([tag, commit]) => commit.theme.font)
           .attr("font-weight", "bold")
           .attr(
-            "x",
-            ([tag, commit]) =>
-              x(commitToTimeDistance(commit)) + commit.theme.textOffset.x
+          "x",
+          ([tag, commit]) =>
+            x(commitToTimeDistance(commit)) + commit.theme.textOffset.x
           )
           .attr(
-            "y",
-            ([tag, commit]) =>
-              y(commitToTimeDistance(commit)) - commit.theme.textOffset.y
+          "y",
+          ([tag, commit]) =>
+            y(commitToTimeDistance(commit)) - commit.theme.textOffset.y
           );
       }
     });
