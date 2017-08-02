@@ -1,5 +1,5 @@
 import { ColorHelper, rgb } from "csx";
-import { GitRepository, BranchTheme, IInitialRef } from "./gitChart";
+import { GitRepository, BranchTheme, IInitialRef, Theme } from "./gitChart";
 
 // hotfixes
 const hotfixColors = [
@@ -31,10 +31,10 @@ const releaseColors = [
 interface IGitGraphOptions {
   template?: "metro" | "blackarrow";
   orientation?:
-  | "vertical-reverse"
-  | "horizontal"
-  | "horizontal-reverse"
-  | "vertical";
+    | "vertical-reverse"
+    | "horizontal"
+    | "horizontal-reverse"
+    | "vertical";
   mode?: "compact" | "extended";
   elementId: string;
   author?: string;
@@ -108,14 +108,18 @@ const tag: ICommitOptions = {
   dotSize: 9
 };
 
-function makeGraph(elementId: string, initialBranches: IInitialRef[]) {
+function makeGraph(
+  elementId: string,
+  direction: Theme["direction"],
+  initialBranches: IInitialRef[]
+) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.id = elementId;
   document.body.appendChild(svg);
   const temp = new GitRepository(
     svg,
     {
-      direction: "horizontal",
+      direction,
       rowDistance: 40,
       timeDistance: 60,
       padding: { x: 0, y: 7 },
@@ -123,6 +127,9 @@ function makeGraph(elementId: string, initialBranches: IInitialRef[]) {
         strokeWidth: 3,
         includeBranchStart: true,
         includeMergeTime: true,
+        textOffset: { x: 0, y: -6 },
+        fontSize: 12,
+        font: "Arial",
         ...branchColors(releaseColors[0])
       }
     },
@@ -154,24 +161,25 @@ function oldBranchColors(color: string) {
 }
 function branchColors(
   color: ColorHelper
-): Pick<BranchTheme, "strokeColor" | "defaultCommitTheme"> {
+): Pick<BranchTheme, "strokeColor" | "defaultCommitTheme" | "textColor"> {
   return {
     strokeColor: color,
+    textColor: color,
     defaultCommitTheme: {
       commitSize: 9,
       fillColor: color,
       strokeColor: color,
       strokeWidth: 3,
       textColor: color,
-      textOffset: { x: 0, y: -6 },
+      textOffset: { x: 3, y: -6 },
       fontSize: 12,
       font: "Arial"
     }
   };
 }
 
-function twoFeature(target: string, mode: IGitGraphOptions["mode"]) {
-  const gitgraph = makeGraph(target, [
+function twoFeature(target: string, direction: Theme["direction"]) {
+  const gitgraph = makeGraph(target, direction, [
     { name: "master", row: 2, theme: branchColors(releaseColors[0]) }
   ]);
   gitgraph
@@ -995,7 +1003,8 @@ function fullFeature(target: string, mode: IGitGraphOptions["mode"]) {
   return { release01, featureA, featureB, featureC };
 }
 
-twoFeature("twoFeature", "compact");
+twoFeature("twoFeature", "horizontal");
+twoFeature("twoFeatureB", "vertical");
 twoFeatureOld("twoFeature-old", "compact");
 threeFeature("threeFeature", "compact");
 twoFeatureIncremental("twoFeatureIncremental", "compact");
@@ -1012,5 +1021,3 @@ threeHotfixCherryPick("threeHotfixCherryPick", "compact");
 threeHotfixCherryPickDirect("threeHotfixCherryPickDirect", "compact");
 threeHotfixGoodRelease("threeHotfixGoodRelease", "compact");
 fullFeature("fullFeature", "compact");
-
-prettier("prettier", "compact");
