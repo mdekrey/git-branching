@@ -1,5 +1,11 @@
 import { ColorHelper, rgb } from "csx";
-import { GitRepository, BranchTheme, IInitialRef, Theme } from "./gitChart";
+import {
+  GitRepository,
+  BranchTheme,
+  IInitialRef,
+  Theme,
+  Commit
+} from "./gitChart";
 
 // hotfixes
 const hotfixColors = [
@@ -1003,6 +1009,44 @@ function fullFeature(target: string, mode: IGitGraphOptions["mode"]) {
   return { release01, featureA, featureB, featureC };
 }
 
+function prettier(target: string) {
+  const gitgraph = makeGraph(target, "horizontal", [
+    { name: "infrastructure", row: 0, theme: branchColors(releaseColors[0]) },
+    { name: "feature-a", row: 1, theme: branchColors(featureColors[0]) }
+  ]);
+  let preprettier: Commit;
+  let prettyify: Commit;
+  gitgraph
+    .adjustTime(0.5)
+    .commit("infrastructure", { commitSize: 5 })
+    .adjustTime(-0.5)
+    .commit("infrastructure", { commitSize: 5 })
+    .adjustTime(-0.5)
+    .commit("feature-a", { label: "Feature work" })
+    .commit(
+      "infrastructure",
+      { label: "Add prettier" },
+      undefined,
+      c => (preprettier = c)
+    )
+    .adjustTime(0.2)
+    .commit(
+      "infrastructure",
+      { label: "Prettyify" },
+      undefined,
+      c => (prettyify = c)
+    )
+    .commit("infrastructure", { commitSize: 5, label: "Other work" })
+    .adjustTime(-0.5)
+    .commit("infrastructure", { commitSize: 5 })
+    .adjustTime(-0.5)
+    .merge("feature-a", preprettier!)
+    .merge("feature-a", prettyify!)
+    .commit("feature-a", { label: "Prettyify" })
+    .merge("feature-a", "infrastructure")
+    .render();
+}
+
 twoFeature("twoFeature", "horizontal");
 twoFeature("twoFeatureB", "vertical");
 twoFeatureOld("twoFeature-old", "compact");
@@ -1021,3 +1065,4 @@ threeHotfixCherryPick("threeHotfixCherryPick", "compact");
 threeHotfixCherryPickDirect("threeHotfixCherryPickDirect", "compact");
 threeHotfixGoodRelease("threeHotfixGoodRelease", "compact");
 fullFeature("fullFeature", "compact");
+prettier("prettier");

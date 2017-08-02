@@ -184,7 +184,12 @@ export class GitRepository {
     return this;
   }
 
-  commit(branchName: string, theme?: Partial<CommitTheme>, hash?: string) {
+  commit(
+    branchName: string,
+    theme?: Partial<CommitTheme>,
+    hash?: string,
+    commitCallback?: (commit: Commit) => void
+  ) {
     const ref = this.currentRefs.get(branchName);
     if (!ref) {
       throw new Error(`Ref ${branchName} does not exist.`);
@@ -202,6 +207,9 @@ export class GitRepository {
       hash
     );
     this.updateRef(branchName, commit);
+    if (commitCallback) {
+      commitCallback(commit);
+    }
     return this;
   }
 
@@ -223,7 +231,7 @@ export class GitRepository {
 
   merge(
     branchName: string,
-    otherBranch: string,
+    otherBranch: Commitish,
     theme?: Partial<CommitTheme>,
     hash?: string
   ) {
@@ -231,39 +239,56 @@ export class GitRepository {
     if (!ref) {
       throw new Error(`Ref ${branchName} does not exist.`);
     }
-    let otherRef = this.currentRefs.get(otherBranch);
-    if (!otherRef) {
-      throw new Error(`Ref ${otherBranch} does not exist.`);
-    }
-
-    this.currentTime -= 0.5;
-    if (otherRef.ref.theme.includeBranchStart) {
-      this.commit(otherBranch, {
-        fillColor: transparent,
-        strokeColor: transparent
-      });
-      this.currentTime -= 0.5;
-      otherRef = this.currentRefs.get(otherBranch)!;
-    }
     const finalTheme = Object.assign(
       {},
       ref.ref.theme.defaultCommitTheme,
       theme || {}
     );
-    const commit = this.addCommit(
-      [
-        { commit: ref.current, branch: ref.ref.theme, branchName },
-        {
-          commit: otherRef.current,
-          branch: otherRef.ref.theme,
-          branchName: otherBranch
-        }
-      ],
-      ref.ref.row,
-      finalTheme,
-      hash
-    );
-    this.updateRef(branchName, commit);
+    if (typeof otherBranch === "string") {
+      let otherRef = this.currentRefs.get(otherBranch);
+      if (!otherRef) {
+        throw new Error(`Ref ${otherBranch} does not exist.`);
+      }
+
+      if (otherRef.ref.theme.includeBranchStart) {
+        this.currentTime -= 0.5;
+        this.commit(otherBranch, {
+          fillColor: transparent,
+          strokeColor: transparent
+        });
+        this.currentTime -= 0.5;
+        otherRef = this.currentRefs.get(otherBranch)!;
+      }
+      const commit = this.addCommit(
+        [
+          { commit: ref.current, branch: ref.ref.theme, branchName },
+          {
+            commit: otherRef.current,
+            branch: otherRef.ref.theme,
+            branchName: otherBranch
+          }
+        ],
+        ref.ref.row,
+        finalTheme,
+        hash
+      );
+      this.updateRef(branchName, commit);
+    } else {
+      const commit = this.addCommit(
+        [
+          { commit: ref.current, branch: ref.ref.theme, branchName },
+          {
+            commit: otherBranch,
+            branch: otherBranch.parents[0].branch,
+            branchName: undefined
+          }
+        ],
+        ref.ref.row,
+        finalTheme,
+        hash
+      );
+      this.updateRef(branchName, commit);
+    }
     return this;
   }
 
