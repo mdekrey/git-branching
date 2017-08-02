@@ -1,4 +1,5 @@
-import { rgb } from "csx";
+import { ColorHelper, rgb } from "csx";
+import { GitRepository, BranchTheme, IInitialRef } from "./gitChart";
 
 // hotfixes
 const hotfixColors = [
@@ -107,7 +108,28 @@ const tag: ICommitOptions = {
   dotSize: 9
 };
 
-function makeGraph(elementId: string, mode: IGitGraphOptions["mode"]) {
+function makeGraph(elementId: string, initialBranches: IInitialRef[]) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.id = elementId;
+  document.body.appendChild(svg);
+  const temp = new GitRepository(
+    svg,
+    {
+      direction: "horizontal",
+      rowDistance: 40,
+      timeDistance: 60,
+      padding: { x: 0, y: 7 },
+      defaultBranchTheme: {
+        strokeWidth: 3,
+        includeBranchStart: true,
+        ...branchColors(releaseColors[0])
+      }
+    },
+    initialBranches
+  );
+  return temp;
+}
+function makeOldGraph(elementId: string, mode: IGitGraphOptions["mode"]) {
   const canvas = document.createElement("canvas");
   canvas.id = elementId;
   document.body.appendChild(canvas);
@@ -118,7 +140,7 @@ function makeGraph(elementId: string, mode: IGitGraphOptions["mode"]) {
     orientation: mode === "compact" ? "horizontal" : "vertical"
   });
 }
-function branchColors(color: string) {
+function oldBranchColors(color: string) {
   return {
     color,
     commitDefaultOptions: {
@@ -129,27 +151,63 @@ function branchColors(color: string) {
     }
   };
 }
+function branchColors(
+  color: ColorHelper
+): Pick<BranchTheme, "strokeColor" | "defaultCommitTheme"> {
+  return {
+    strokeColor: color,
+    defaultCommitTheme: {
+      commitSize: 9,
+      fillColor: color,
+      strokeColor: color,
+      strokeWidth: 3,
+      textColor: color,
+      textOffset: { x: 0, y: -6 },
+      fontSize: 12,
+      font: "Arial"
+    }
+  };
+}
 
 function twoFeature(target: string, mode: IGitGraphOptions["mode"]) {
-  const gitgraph = makeGraph(target, mode);
+  const gitgraph = makeGraph(target, [
+    { name: "master", row: 2, theme: branchColors(releaseColors[0]) }
+  ]);
+  gitgraph
+    .commit("master")
+    .branch("feature-a", "master", 1, branchColors(featureColors[0]))
+    .commit("feature-a")
+    .branch("feature-b", "master", 0, branchColors(featureColors[1]))
+    .commit("feature-b")
+    .commit("feature-a")
+    .merge("master", "feature-a")
+    .deleteRef("feature-a")
+    .merge("master", "feature-b")
+    .deleteRef("feature-b")
+    .tag("master", "0.1.0")
+    .render();
+}
+
+function twoFeatureOld(target: string, mode: IGitGraphOptions["mode"]) {
+  const gitgraph = makeOldGraph(target, mode);
   const release01 = gitgraph.branch({
     name: "master",
     showLabel: true,
-    ...branchColors(releaseColors[0].toString()),
+    ...oldBranchColors(releaseColors[0].toString()),
     column: 2
   });
   release01.commit("Initial commit");
   const featureA = release01.branch({
     name: "feature-a",
     showLabel: true,
-    ...branchColors(featureColors[0].toString()),
+    ...oldBranchColors(featureColors[0].toString()),
     column: 1
   });
   featureA.commit("Implement feature WIP");
   const featureB = release01.branch({
     name: "feature-b",
     showLabel: true,
-    ...branchColors(featureColors[1].toString()),
+    ...oldBranchColors(featureColors[1].toString()),
     column: 0
   });
   featureB.commit("Implement feature");
@@ -164,25 +222,25 @@ function twoFeature(target: string, mode: IGitGraphOptions["mode"]) {
 }
 
 function threeFeature(target: string, mode: IGitGraphOptions["mode"]) {
-  const gitgraph = makeGraph(target, mode);
+  const gitgraph = makeOldGraph(target, mode);
   const release01 = gitgraph.branch({
     name: "master",
     showLabel: true,
-    ...branchColors(releaseColors[0].toString()),
+    ...oldBranchColors(releaseColors[0].toString()),
     column: 2
   });
   release01.commit("Initial commit");
   const featureA = release01.branch({
     name: "feature-a",
     showLabel: true,
-    ...branchColors(featureColors[0].toString()),
+    ...oldBranchColors(featureColors[0].toString()),
     column: 1
   });
   featureA.commit("Implement feature WIP");
   const featureB = release01.branch({
     name: "feature-b",
     showLabel: true,
-    ...branchColors(featureColors[1].toString()),
+    ...oldBranchColors(featureColors[1].toString()),
     column: 0
   });
   featureB.commit("Implement feature");
@@ -192,7 +250,7 @@ function threeFeature(target: string, mode: IGitGraphOptions["mode"]) {
   const featureC = release01.branch({
     name: "feature-c",
     showLabel: true,
-    ...branchColors(featureColors[2].toString()),
+    ...oldBranchColors(featureColors[2].toString()),
     column: 1
   });
   featureC.commit("Implement feature");
@@ -206,25 +264,25 @@ function threeFeature(target: string, mode: IGitGraphOptions["mode"]) {
 }
 
 function twoFeatureIncremental(target: string, mode: IGitGraphOptions["mode"]) {
-  const gitgraph = makeGraph(target, mode);
+  const gitgraph = makeOldGraph(target, mode);
   const release01 = gitgraph.branch({
     name: "master",
     showLabel: true,
-    ...branchColors(releaseColors[0].toString()),
+    ...oldBranchColors(releaseColors[0].toString()),
     column: 2
   });
   release01.commit("Initial commit");
   const featureA = release01.branch({
     name: "feature-a",
     showLabel: true,
-    ...branchColors(featureColors[0].toString()),
+    ...oldBranchColors(featureColors[0].toString()),
     column: 1
   });
   featureA.commit("Implement feature WIP");
   const featureB = featureA.branch({
     name: "feature-b",
     showLabel: true,
-    ...branchColors(featureColors[1].toString()),
+    ...oldBranchColors(featureColors[1].toString()),
     column: 0
   });
   featureB.commit("Implement feature");
@@ -243,32 +301,32 @@ function twoFeatureInfrastructure(
   target: string,
   mode: IGitGraphOptions["mode"]
 ) {
-  const gitgraph = makeGraph(target, mode);
+  const gitgraph = makeOldGraph(target, mode);
   const release01 = gitgraph.branch({
     name: "master",
     showLabel: true,
-    ...branchColors(releaseColors[0].toString()),
+    ...oldBranchColors(releaseColors[0].toString()),
     column: 3
   });
   release01.commit("Initial commit");
   const infrastructure = release01.branch({
     name: "framework",
     showLabel: true,
-    ...branchColors(featureColors[4].toString()),
+    ...oldBranchColors(featureColors[4].toString()),
     column: 2
   });
   infrastructure.commit("Implement infrastructure");
   const featureA = infrastructure.branch({
     name: "feature-a",
     showLabel: true,
-    ...branchColors(featureColors[0].toString()),
+    ...oldBranchColors(featureColors[0].toString()),
     column: 1
   });
   featureA.commit("Implement feature WIP");
   const featureB = infrastructure.branch({
     name: "feature-b",
     showLabel: true,
-    ...branchColors(featureColors[1].toString()),
+    ...oldBranchColors(featureColors[1].toString()),
     column: 0
   });
   featureB.commit("Implement feature");
@@ -283,18 +341,18 @@ function twoFeatureInfrastructure(
 }
 
 function newRelease(target: string, mode: IGitGraphOptions["mode"]) {
-  const gitgraph = makeGraph(target, mode);
+  const gitgraph = makeOldGraph(target, mode);
   const release01 = gitgraph.branch({
     name: "0.1",
     showLabel: true,
-    ...branchColors(releaseColors[0].toString()),
+    ...oldBranchColors(releaseColors[0].toString()),
     column: 1
   });
   release01.commit({ tag: "0.1.0", dotStrokeColor: release01.color, ...tag });
   const release02 = release01.branch({
     name: "0.2",
     showLabel: true,
-    ...branchColors(releaseColors[1].toString()),
+    ...oldBranchColors(releaseColors[1].toString()),
     column: 0
   });
 
@@ -307,25 +365,25 @@ function threeFeatureMultiRelease(
   target: string,
   mode: IGitGraphOptions["mode"]
 ) {
-  const gitgraph = makeGraph(target, mode);
+  const gitgraph = makeOldGraph(target, mode);
   const release01 = gitgraph.branch({
     name: "0.1",
     showLabel: true,
-    ...branchColors(releaseColors[0].toString()),
+    ...oldBranchColors(releaseColors[0].toString()),
     column: 3
   });
   release01.commit("Initial commit");
   const featureA = release01.branch({
     name: "feature-a",
     showLabel: true,
-    ...branchColors(featureColors[0].toString()),
+    ...oldBranchColors(featureColors[0].toString()),
     column: 1
   });
   featureA.commit("Implement feature WIP");
   const featureB = release01.branch({
     name: "feature-b",
     showLabel: true,
-    ...branchColors(featureColors[1].toString()),
+    ...oldBranchColors(featureColors[1].toString()),
     column: 0
   });
   featureB.commit("Implement feature");
@@ -339,13 +397,13 @@ function threeFeatureMultiRelease(
   const release02 = release01.branch({
     name: "0.2",
     showLabel: true,
-    ...branchColors(releaseColors[1].toString()),
+    ...oldBranchColors(releaseColors[1].toString()),
     column: 2
   });
   const featureC = release01.branch({
     name: "feature-c",
     showLabel: true,
-    ...branchColors(featureColors[2].toString()),
+    ...oldBranchColors(featureColors[2].toString()),
     column: 1
   });
   featureC.commit("Implement feature");
@@ -364,25 +422,25 @@ function threeFeatureMultiReleaseMaster(
   target: string,
   mode: IGitGraphOptions["mode"]
 ) {
-  const gitgraph = makeGraph(target, mode);
+  const gitgraph = makeOldGraph(target, mode);
   const master = gitgraph.branch({
     name: "master",
     showLabel: true,
-    ...branchColors(releaseColors[0].toString()),
+    ...oldBranchColors(releaseColors[0].toString()),
     column: 2
   });
   master.commit("Initial commit");
   const featureA = master.branch({
     name: "feature-a",
     showLabel: true,
-    ...branchColors(featureColors[0].toString()),
+    ...oldBranchColors(featureColors[0].toString()),
     column: 1
   });
   featureA.commit("Implement feature WIP");
   const featureB = master.branch({
     name: "feature-b",
     showLabel: true,
-    ...branchColors(featureColors[1].toString()),
+    ...oldBranchColors(featureColors[1].toString()),
     column: 0
   });
   featureB.commit("Implement feature");
@@ -396,14 +454,14 @@ function threeFeatureMultiReleaseMaster(
   const release01 = master.branch({
     name: "0.1",
     showLabel: true,
-    ...branchColors(releaseColors[1].toString()),
+    ...oldBranchColors(releaseColors[1].toString()),
     column: 3
   });
   release01.commit(hiddenCommit);
   const featureC = master.branch({
     name: "feature-c",
     showLabel: true,
-    ...branchColors(featureColors[2].toString()),
+    ...oldBranchColors(featureColors[2].toString()),
     column: 1
   });
   featureC.commit("Implement feature");
@@ -419,25 +477,25 @@ function threeFeatureMultiReleaseMaster(
 }
 
 function hotfixRelease(target: string, mode: IGitGraphOptions["mode"]) {
-  const gitgraph = makeGraph(target, mode);
+  const gitgraph = makeOldGraph(target, mode);
   const release01 = gitgraph.branch({
     name: "0.1",
     showLabel: true,
-    ...branchColors(releaseColors[0].toString()),
+    ...oldBranchColors(releaseColors[0].toString()),
     column: 1
   });
   release01.commit({ tag: "0.1.0", dotStrokeColor: release01.color, ...tag });
   const release02 = release01.branch({
     name: "0.2",
     showLabel: true,
-    ...branchColors(releaseColors[1].toString()),
+    ...oldBranchColors(releaseColors[1].toString()),
     column: 0
   });
   release02.commit(hiddenCommit);
   const hotfix01 = release01.branch({
     name: "hotfix-1",
     showLabel: true,
-    ...branchColors(hotfixColors[0].toString()),
+    ...oldBranchColors(hotfixColors[0].toString()),
     column: 2
   });
   hotfix01.commit();
@@ -454,25 +512,25 @@ function hotfixRelease(target: string, mode: IGitGraphOptions["mode"]) {
 }
 
 function twoHotfixBadRelease(target: string, mode: IGitGraphOptions["mode"]) {
-  const gitgraph = makeGraph(target, mode);
+  const gitgraph = makeOldGraph(target, mode);
   const release01 = gitgraph.branch({
     name: "0.1",
     showLabel: true,
-    ...branchColors(releaseColors[0].toString()),
+    ...oldBranchColors(releaseColors[0].toString()),
     column: 1
   });
   release01.commit({ tag: "0.1.0", dotStrokeColor: release01.color, ...tag });
   const release02 = release01.branch({
     name: "0.2",
     showLabel: true,
-    ...branchColors(releaseColors[1].toString()),
+    ...oldBranchColors(releaseColors[1].toString()),
     column: 0
   });
   release02.commit(hiddenCommit);
   const hotfix01 = release01.branch({
     name: "hotfix-1",
     showLabel: true,
-    ...branchColors(hotfixColors[0].toString()),
+    ...oldBranchColors(hotfixColors[0].toString()),
     column: 2
   });
   hotfix01.commit();
@@ -485,7 +543,7 @@ function twoHotfixBadRelease(target: string, mode: IGitGraphOptions["mode"]) {
   const hotfix02 = release01.branch({
     name: "hotfix-2",
     showLabel: true,
-    ...branchColors(hotfixColors[1].toString()),
+    ...oldBranchColors(hotfixColors[1].toString()),
     column: 2
   });
   hotfix02.commit();
@@ -502,25 +560,25 @@ function twoHotfixBadRelease(target: string, mode: IGitGraphOptions["mode"]) {
 }
 
 function twoHotfixGoodRelease(target: string, mode: IGitGraphOptions["mode"]) {
-  const gitgraph = makeGraph(target, mode);
+  const gitgraph = makeOldGraph(target, mode);
   const release01 = gitgraph.branch({
     name: "0.1",
     showLabel: true,
-    ...branchColors(releaseColors[0].toString()),
+    ...oldBranchColors(releaseColors[0].toString()),
     column: 1
   });
   release01.commit({ tag: "0.1.0", dotStrokeColor: release01.color, ...tag });
   const release02 = release01.branch({
     name: "0.2",
     showLabel: true,
-    ...branchColors(releaseColors[1].toString()),
+    ...oldBranchColors(releaseColors[1].toString()),
     column: 0
   });
   release02.commit(hiddenCommit);
   const hotfix01 = release01.branch({
     name: "hotfix-1",
     showLabel: true,
-    ...branchColors(hotfixColors[0].toString()),
+    ...oldBranchColors(hotfixColors[0].toString()),
     column: 2
   });
   hotfix01.commit();
@@ -533,7 +591,7 @@ function twoHotfixGoodRelease(target: string, mode: IGitGraphOptions["mode"]) {
   const hotfix02 = release01.branch({
     name: "hotfix-2",
     showLabel: true,
-    ...branchColors(hotfixColors[1].toString()),
+    ...oldBranchColors(hotfixColors[1].toString()),
     column: 2
   });
   hotfix02.commit();
@@ -554,32 +612,32 @@ function twoHotfixGoodRelease(target: string, mode: IGitGraphOptions["mode"]) {
 }
 
 function twoFeatureNoRebase(target: string, mode: IGitGraphOptions["mode"]) {
-  const gitgraph = makeGraph(target, mode);
+  const gitgraph = makeOldGraph(target, mode);
   const release01 = gitgraph.branch({
     name: "master",
     showLabel: true,
-    ...branchColors(releaseColors[0].toString()),
+    ...oldBranchColors(releaseColors[0].toString()),
     column: 3
   });
   release01.commit("Initial commit");
   const infrastructure = release01.branch({
     name: "framework",
     showLabel: true,
-    ...branchColors(featureColors[4].toString()),
+    ...oldBranchColors(featureColors[4].toString()),
     column: 2
   });
   infrastructure.commit("Implement infrastructure");
   const featureA = infrastructure.branch({
     name: "feature-a",
     showLabel: true,
-    ...branchColors(featureColors[0].toString()),
+    ...oldBranchColors(featureColors[0].toString()),
     column: 1
   });
   featureA.commit("Implement feature WIP");
   const featureB = infrastructure.branch({
     name: "feature-b",
     showLabel: true,
-    ...branchColors(featureColors[1].toString()),
+    ...oldBranchColors(featureColors[1].toString()),
     column: 0
   });
   featureB.commit("Implement feature");
@@ -596,25 +654,25 @@ function twoFeatureNoRebase(target: string, mode: IGitGraphOptions["mode"]) {
 }
 
 function twoFeatureBadRebase(target: string, mode: IGitGraphOptions["mode"]) {
-  const gitgraph = makeGraph(target, mode);
+  const gitgraph = makeOldGraph(target, mode);
   const release01 = gitgraph.branch({
     name: "master",
     showLabel: true,
-    ...branchColors(releaseColors[0].toString()),
+    ...oldBranchColors(releaseColors[0].toString()),
     column: 3
   });
   release01.commit("Initial commit");
   const infrastructure = release01.branch({
     name: "framework",
     showLabel: true,
-    ...branchColors(featureColors[4].toString()),
+    ...oldBranchColors(featureColors[4].toString()),
     column: 2
   });
   infrastructure.commit("Implement infrastructure");
   const featureB = infrastructure.branch({
     name: "feature-b",
     showLabel: true,
-    ...branchColors(featureColors[1].toString()),
+    ...oldBranchColors(featureColors[1].toString()),
     column: 0
   });
   featureB.commit("Implement feature");
@@ -622,7 +680,7 @@ function twoFeatureBadRebase(target: string, mode: IGitGraphOptions["mode"]) {
   const infrastructure2 = release01.branch({
     name: "framework",
     showLabel: true,
-    ...branchColors(featureColors[4].toString()),
+    ...oldBranchColors(featureColors[4].toString()),
     column: 2
   });
   infrastructure2.commit("Implement infrastructure");
@@ -630,7 +688,7 @@ function twoFeatureBadRebase(target: string, mode: IGitGraphOptions["mode"]) {
   const featureA = infrastructure2.branch({
     name: "feature-a",
     showLabel: true,
-    ...branchColors(featureColors[0].toString()),
+    ...oldBranchColors(featureColors[0].toString()),
     column: 1
   });
   featureA.commit("Implement feature WIP");
@@ -641,25 +699,25 @@ function twoFeatureBadRebase(target: string, mode: IGitGraphOptions["mode"]) {
 }
 
 function threeHotfixCherryPick(target: string, mode: IGitGraphOptions["mode"]) {
-  const gitgraph = makeGraph(target, mode);
+  const gitgraph = makeOldGraph(target, mode);
   const release01 = gitgraph.branch({
     name: "0.1",
     showLabel: true,
-    ...branchColors(releaseColors[0].toString()),
+    ...oldBranchColors(releaseColors[0].toString()),
     column: 2
   });
   release01.commit({ tag: "0.1.0", dotStrokeColor: release01.color, ...tag });
   const release02 = release01.branch({
     name: "0.2",
     showLabel: true,
-    ...branchColors(releaseColors[1].toString()),
+    ...oldBranchColors(releaseColors[1].toString()),
     column: 0
   });
   release02.commit(hiddenCommit);
   const hotfix01 = release01.branch({
     name: "hotfix-1",
     showLabel: true,
-    ...branchColors(hotfixColors[0].toString()),
+    ...oldBranchColors(hotfixColors[0].toString()),
     column: 3
   });
   hotfix01.commit();
@@ -671,7 +729,7 @@ function threeHotfixCherryPick(target: string, mode: IGitGraphOptions["mode"]) {
   const hotfix02 = release01.branch({
     name: "hotfix-2",
     showLabel: true,
-    ...branchColors(hotfixColors[1].toString()),
+    ...oldBranchColors(hotfixColors[1].toString()),
     column: 3
   });
   hotfix02.commit();
@@ -683,7 +741,7 @@ function threeHotfixCherryPick(target: string, mode: IGitGraphOptions["mode"]) {
   const hotfix02cherry = release02.branch({
     name: "hotfix-2-cherry",
     showLabel: true,
-    ...branchColors(hotfixColors[1].toString()),
+    ...oldBranchColors(hotfixColors[1].toString()),
     column: 1
   });
   hotfix02cherry.commit();
@@ -695,7 +753,7 @@ function threeHotfixCherryPick(target: string, mode: IGitGraphOptions["mode"]) {
   const hotfix03 = release01.branch({
     name: "hotfix-3",
     showLabel: true,
-    ...branchColors(hotfixColors[2].toString()),
+    ...oldBranchColors(hotfixColors[2].toString()),
     column: 3
   });
   hotfix03.commit();
@@ -707,7 +765,7 @@ function threeHotfixCherryPick(target: string, mode: IGitGraphOptions["mode"]) {
   const hotfix03cherry = release02.branch({
     name: "hotfix-3-cherry",
     showLabel: true,
-    ...branchColors(hotfixColors[2].toString()),
+    ...oldBranchColors(hotfixColors[2].toString()),
     column: 1
   });
   hotfix03cherry.commit();
@@ -727,25 +785,25 @@ function threeHotfixCherryPickDirect(
   target: string,
   mode: IGitGraphOptions["mode"]
 ) {
-  const gitgraph = makeGraph(target, mode);
+  const gitgraph = makeOldGraph(target, mode);
   const release01 = gitgraph.branch({
     name: "0.1",
     showLabel: true,
-    ...branchColors(releaseColors[0].toString()),
+    ...oldBranchColors(releaseColors[0].toString()),
     column: 1
   });
   release01.commit({ tag: "0.1.0", dotStrokeColor: release01.color, ...tag });
   const release02 = release01.branch({
     name: "0.2",
     showLabel: true,
-    ...branchColors(releaseColors[1].toString()),
+    ...oldBranchColors(releaseColors[1].toString()),
     column: 0
   });
   release02.commit(hiddenCommit);
   const hotfix01 = release01.branch({
     name: "hotfix-1",
     showLabel: true,
-    ...branchColors(hotfixColors[0].toString()),
+    ...oldBranchColors(hotfixColors[0].toString()),
     column: 2
   });
   hotfix01.commit();
@@ -757,7 +815,7 @@ function threeHotfixCherryPickDirect(
   const hotfix02 = release01.branch({
     name: "hotfix-2",
     showLabel: true,
-    ...branchColors(hotfixColors[1].toString()),
+    ...oldBranchColors(hotfixColors[1].toString()),
     column: 2
   });
   hotfix02.commit();
@@ -775,7 +833,7 @@ function threeHotfixCherryPickDirect(
   const hotfix03 = release01.branch({
     name: "hotfix-3",
     showLabel: true,
-    ...branchColors(hotfixColors[2].toString()),
+    ...oldBranchColors(hotfixColors[2].toString()),
     column: 2
   });
   hotfix03.commit();
@@ -800,25 +858,25 @@ function threeHotfixGoodRelease(
   target: string,
   mode: IGitGraphOptions["mode"]
 ) {
-  const gitgraph = makeGraph(target, mode);
+  const gitgraph = makeOldGraph(target, mode);
   const release01 = gitgraph.branch({
     name: "0.1",
     showLabel: true,
-    ...branchColors(releaseColors[0].toString()),
+    ...oldBranchColors(releaseColors[0].toString()),
     column: 1
   });
   release01.commit({ tag: "0.1.0", dotStrokeColor: release01.color, ...tag });
   const release02 = release01.branch({
     name: "0.2",
     showLabel: true,
-    ...branchColors(releaseColors[1].toString()),
+    ...oldBranchColors(releaseColors[1].toString()),
     column: 0
   });
   release02.commit(hiddenCommit);
   const hotfix01 = release01.branch({
     name: "hotfix-1",
     showLabel: true,
-    ...branchColors(hotfixColors[0].toString()),
+    ...oldBranchColors(hotfixColors[0].toString()),
     column: 2
   });
   hotfix01.commit();
@@ -831,7 +889,7 @@ function threeHotfixGoodRelease(
   const hotfix02 = release01.branch({
     name: "hotfix-2",
     showLabel: true,
-    ...branchColors(hotfixColors[1].toString()),
+    ...oldBranchColors(hotfixColors[1].toString()),
     column: 2
   });
   hotfix02.commit();
@@ -848,7 +906,7 @@ function threeHotfixGoodRelease(
   const hotfix03 = release01.branch({
     name: "hotfix-3",
     showLabel: true,
-    ...branchColors(hotfixColors[2].toString()),
+    ...oldBranchColors(hotfixColors[2].toString()),
     column: 2
   });
   hotfix03.commit();
@@ -870,25 +928,25 @@ function threeHotfixGoodRelease(
 }
 
 function fullFeature(target: string, mode: IGitGraphOptions["mode"]) {
-  const gitgraph = makeGraph(target, mode);
+  const gitgraph = makeOldGraph(target, mode);
   const release01 = gitgraph.branch({
     name: "0.1",
     showLabel: true,
-    ...branchColors(releaseColors[0].toString()),
+    ...oldBranchColors(releaseColors[0].toString()),
     column: 3
   });
   release01.commit("Initial commit");
   const featureA = release01.branch({
     name: "feature-a",
     showLabel: true,
-    ...branchColors(featureColors[0].toString()),
+    ...oldBranchColors(featureColors[0].toString()),
     column: 1
   });
   featureA.commit("Implement feature A WIP");
   const featureB = release01.branch({
     name: "feature-b",
     showLabel: true,
-    ...branchColors(featureColors[1].toString()),
+    ...oldBranchColors(featureColors[1].toString()),
     column: 0
   });
   featureB.commit("Implement feature B");
@@ -902,13 +960,13 @@ function fullFeature(target: string, mode: IGitGraphOptions["mode"]) {
   const release02 = release01.branch({
     name: "0.2",
     showLabel: true,
-    ...branchColors(releaseColors[1].toString()),
+    ...oldBranchColors(releaseColors[1].toString()),
     column: 2
   });
   const featureC = release01.branch({
     name: "feature-c",
     showLabel: true,
-    ...branchColors(featureColors[2].toString()),
+    ...oldBranchColors(featureColors[2].toString()),
     column: 1
   });
   featureC.commit("Implement feature C");
@@ -916,7 +974,7 @@ function fullFeature(target: string, mode: IGitGraphOptions["mode"]) {
   const hotfix01 = release01.branch({
     name: "hotfix-1",
     showLabel: true,
-    ...branchColors(hotfixColors[0].toString()),
+    ...oldBranchColors(hotfixColors[0].toString()),
     column: 4
   });
   hotfix01.commit("P1 bug fix!");
@@ -937,6 +995,7 @@ function fullFeature(target: string, mode: IGitGraphOptions["mode"]) {
 }
 
 twoFeature("twoFeature", "compact");
+twoFeatureOld("twoFeature-old", "compact");
 threeFeature("threeFeature", "compact");
 twoFeatureIncremental("twoFeatureIncremental", "compact");
 twoFeatureInfrastructure("twoFeatureInfrastructure", "compact");
