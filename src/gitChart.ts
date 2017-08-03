@@ -213,6 +213,23 @@ export class GitRepository {
     return this;
   }
 
+  microcommit(branchName: string, theme?: Partial<CommitTheme>) {
+    const ref = this.currentRefs.get(branchName);
+    if (!ref) {
+      throw new Error(`Ref ${branchName} does not exist.`);
+    }
+
+    const { strokeWidth, defaultCommitTheme: { commitSize } } = ref.ref.theme;
+
+    this.commit(branchName, {
+      ...theme || {},
+      commitSize: strokeWidth + (commitSize - strokeWidth) / 3
+    });
+    this.adjustTime(-0.5);
+
+    return this;
+  }
+
   private addCommit(
     parents: CommitParent[],
     row: number,

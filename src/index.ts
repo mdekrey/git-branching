@@ -185,10 +185,10 @@ function branchColors(
 }
 
 function twoFeature(target: string, direction: Theme["direction"]) {
-  const gitgraph = makeGraph(target, direction, [
+  const git = makeGraph(target, direction, [
     { name: "master", row: 2, theme: branchColors(releaseColors[0]) }
   ]);
-  gitgraph
+  git
     .commit("master")
     .branch("feature-a", "master", 1, branchColors(featureColors[0]))
     .commit("feature-a")
@@ -203,79 +203,28 @@ function twoFeature(target: string, direction: Theme["direction"]) {
     .render();
 }
 
-function twoFeatureOld(target: string, mode: IGitGraphOptions["mode"]) {
-  const gitgraph = makeOldGraph(target, mode);
-  const release01 = gitgraph.branch({
-    name: "master",
-    showLabel: true,
-    ...oldBranchColors(releaseColors[0].toString()),
-    column: 2
-  });
-  release01.commit("Initial commit");
-  const featureA = release01.branch({
-    name: "feature-a",
-    showLabel: true,
-    ...oldBranchColors(featureColors[0].toString()),
-    column: 1
-  });
-  featureA.commit("Implement feature WIP");
-  const featureB = release01.branch({
-    name: "feature-b",
-    showLabel: true,
-    ...oldBranchColors(featureColors[1].toString()),
-    column: 0
-  });
-  featureB.commit("Implement feature");
-  featureA.commit("Finish feature");
-  featureA.merge(release01);
-  featureB.merge(release01, {
-    tag: "0.1.0",
-    dotStrokeColor: release01.color,
-    ...tag
-  });
-  return { release01, featureA, featureB };
-}
-
-function threeFeature(target: string, mode: IGitGraphOptions["mode"]) {
-  const gitgraph = makeOldGraph(target, mode);
-  const release01 = gitgraph.branch({
-    name: "master",
-    showLabel: true,
-    ...oldBranchColors(releaseColors[0].toString()),
-    column: 2
-  });
-  release01.commit("Initial commit");
-  const featureA = release01.branch({
-    name: "feature-a",
-    showLabel: true,
-    ...oldBranchColors(featureColors[0].toString()),
-    column: 1
-  });
-  featureA.commit("Implement feature WIP");
-  const featureB = release01.branch({
-    name: "feature-b",
-    showLabel: true,
-    ...oldBranchColors(featureColors[1].toString()),
-    column: 0
-  });
-  featureB.commit("Implement feature");
-  featureA.commit("Finish feature");
-  featureA.merge(release01);
-  release01.merge(featureB);
-  const featureC = release01.branch({
-    name: "feature-c",
-    showLabel: true,
-    ...oldBranchColors(featureColors[2].toString()),
-    column: 1
-  });
-  featureC.commit("Implement feature");
-  featureB.merge(release01);
-  featureC.merge(release01, {
-    tag: "0.1.0",
-    dotStrokeColor: release01.color,
-    ...tag
-  });
-  return { release01, featureA, featureB, featureC };
+function threeFeature(target: string) {
+  const git = makeGraph(target, "horizontal", [
+    { name: "master", row: 2, theme: branchColors(releaseColors[0]) }
+  ]);
+  git
+    .commit("master")
+    .branch("feature-a", "master", 1, branchColors(featureColors[0]))
+    .commit("feature-a")
+    .branch("feature-b", "master", 0, branchColors(featureColors[1]))
+    .commit("feature-b")
+    .commit("feature-a")
+    .merge("master", "feature-a")
+    .deleteRef("feature-a")
+    .merge("feature-b", "master")
+    .branch("feature-c", "master", 1, branchColors(featureColors[2]))
+    .commit("feature-c")
+    .merge("master", "feature-b")
+    .deleteRef("feature-b")
+    .merge("master", "feature-c")
+    .deleteRef("feature-c")
+    .tag("master", "0.1.0")
+    .render();
 }
 
 function twoFeatureIncremental(target: string, mode: IGitGraphOptions["mode"]) {
@@ -1018,11 +967,9 @@ function prettier(target: string) {
   let prettyify: Commit;
   gitgraph
     .adjustTime(0.5)
-    .commit("infrastructure", { commitSize: 5 })
-    .adjustTime(-0.5)
-    .commit("infrastructure", { commitSize: 5 })
-    .adjustTime(-0.5)
-    .commit("feature-a", { label: "Feature work" })
+    .microcommit("infrastructure")
+    .microcommit("infrastructure")
+    .microcommit("feature-a", { label: "Feature work" })
     .commit(
       "infrastructure",
       { label: "Add prettier" },
@@ -1036,10 +983,8 @@ function prettier(target: string) {
       undefined,
       c => (prettyify = c)
     )
-    .commit("infrastructure", { commitSize: 5, label: "Other work" })
-    .adjustTime(-0.5)
-    .commit("infrastructure", { commitSize: 5 })
-    .adjustTime(-0.5)
+    .microcommit("infrastructure", { label: "Other work" })
+    .microcommit("infrastructure")
     .merge("feature-a", preprettier!)
     .merge("feature-a", prettyify!)
     .commit("feature-a", { label: "Prettyify" })
@@ -1049,8 +994,7 @@ function prettier(target: string) {
 
 twoFeature("twoFeature", "horizontal");
 twoFeature("twoFeatureB", "vertical");
-twoFeatureOld("twoFeature-old", "compact");
-threeFeature("threeFeature", "compact");
+threeFeature("threeFeature");
 twoFeatureIncremental("twoFeatureIncremental", "compact");
 twoFeatureInfrastructure("twoFeatureInfrastructure", "compact");
 threeFeatureMultiRelease("threeFeatureMultiRelease", "compact");
