@@ -53,7 +53,6 @@ export const bind = <
   onExit = target => target.remove(),
   onEach
 }: ICompleteBindProps<GElement, NewDatum, PElement, PDatum>) => {
-  console.log(target);
   const newElems = onCreate(target.enter());
   if (onEnter) {
     onEnter(newElems);

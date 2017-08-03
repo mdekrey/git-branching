@@ -325,7 +325,6 @@ export class GitRepository {
   }
 
   render() {
-    console.log(this);
     const commits = Array.from(this.allCommits.values());
     const parents = flatmap(commits, commit =>
       commit.parents.map(parent => ({ ...parent, child: commit }))
