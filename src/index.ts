@@ -37,6 +37,7 @@ const releaseColors = [
 
 const deleteMarkerSize = 6;
 const deleteMarker: Partial<CommitTheme> = {
+  time: 0,
   specialStyle: {
     onEnter: g => g.append("path"),
     onEach: g =>

@@ -231,6 +231,9 @@ export class GitRepository {
         commitSize: strokeWidth + (commitSize - strokeWidth) / 3,
         time: 1 / 3
       });
+      if (theme) {
+        theme.label = "";
+      }
     }
 
     return this;
