@@ -216,7 +216,7 @@ export class GitRepository {
   microcommit(
     branchName: string,
     theme?: Partial<CommitTheme>,
-    count: number = 1
+    count: number = 2
   ) {
     const ref = this.currentRefs.get(branchName);
     if (!ref) {
