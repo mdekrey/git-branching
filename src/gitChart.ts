@@ -413,11 +413,16 @@ export class GitRepository {
             parent =>
               x(parentToTimeDistance(parent)) + parent.branch.textOffset.x
           )
-          .attr(
-            "y",
-            parent =>
-              y(parentToTimeDistance(parent)) + parent.branch.textOffset.y
-          )
+          .attr("y", parent => {
+            const origin = parentToTimeDistance(parent);
+            const dest = commitToTimeDistance(parent.child);
+            const atan = Math.atan2(y(dest) - y(origin), x(dest) - x(origin));
+            const flip = this.chartTheme.direction === "horizontal" && atan > 0;
+            return (
+              y(parentToTimeDistance(parent)) +
+              parent.branch.textOffset.y * (flip ? -1 : 1)
+            );
+          })
           .attr("transform", parent => {
             const origin = parentToTimeDistance(parent);
             const dest = commitToTimeDistance(parent.child);
@@ -432,6 +437,15 @@ export class GitRepository {
             const atan = Math.atan2(y(dest) - y(origin), x(dest) - x(origin));
             const flip = atan > Math.PI / 2;
             return flip ? "end" : "start";
+          })
+          .attr("alignment-baseline", parent => {
+            const origin = parentToTimeDistance(parent);
+            const dest = commitToTimeDistance(parent.child);
+            const atan = Math.atan2(y(dest) - y(origin), x(dest) - x(origin));
+            const flip = this.chartTheme.direction === "horizontal" && atan > 0;
+            return this.chartTheme.direction === "horizontal" && flip
+              ? "hanging"
+              : "ideographic";
           })
     });
 

@@ -290,16 +290,6 @@ function twoFeatureInfrastructure() {
     .render();
 }
 
-function newRelease() {
-  makeGraph("horizontal", [
-    { name: "0.1", row: 1, theme: branchColors(releaseColors[0]) }
-  ])
-    .commit("0.1")
-    .tag("0.1", "0.1.0")
-    .branch("0.2", "0.1", 0, branchColors(releaseColors[1]))
-    .render();
-}
-
 function threeFeatureMultiRelease() {
   makeGraph("horizontal", [
     { name: "0.1", row: 3, theme: branchColors(releaseColors[0]) }
@@ -325,7 +315,33 @@ function threeFeatureMultiRelease() {
     .render();
 }
 
-function hotfixRelease(target: string, mode: IGitGraphOptions["mode"]) {
+function newRelease() {
+  makeGraph("horizontal", [
+    { name: "0.1", row: 1, theme: branchColors(releaseColors[0]) }
+  ])
+    .commit("0.1")
+    .tag("0.1", "0.1.0")
+    .branch("0.2", "0.1", 0, branchColors(releaseColors[1]))
+    .render();
+}
+
+function hotfixRelease() {
+  makeGraph("horizontal", [
+    { name: "0.1", row: 1, theme: branchColors(releaseColors[0]) }
+  ])
+    .commit("0.1")
+    .tag("0.1", "0.1.0")
+    .branch("0.2", "0.1", 0, branchColors(releaseColors[1]))
+    .branch("hotfix-1", "0.1", 2, branchColors(hotfixColors[0]))
+    .microcommit("hotfix-1", {}, 2)
+    .merge("0.1", "hotfix-1")
+    .deleteRef("hotfix-1")
+    .tag("0.1", "0.1.1")
+    .merge("0.2", "0.1")
+    .render();
+}
+
+function hotfixReleaseOld(target: string, mode: IGitGraphOptions["mode"]) {
   const gitgraph = makeOldGraph(target, mode);
   const release01 = gitgraph.branch({
     name: "0.1",
@@ -884,7 +900,8 @@ twoFeatureIncremental();
 twoFeatureInfrastructure();
 threeFeatureMultiRelease();
 newRelease();
-hotfixRelease("hotfixRelease", "compact");
+hotfixRelease();
+hotfixReleaseOld("hotfixRelease", "compact");
 twoHotfixBadRelease("twoHotfixBadRelease", "compact");
 twoHotfixGoodRelease("twoHotfixGoodRelease", "compact");
 twoFeatureNoRebase("twoFeatureNoRebase", "compact");
