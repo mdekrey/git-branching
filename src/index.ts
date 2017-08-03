@@ -115,12 +115,10 @@ const tag: ICommitOptions = {
 };
 
 function makeGraph(
-  elementId: string,
   direction: Theme["direction"],
   initialBranches: IInitialRef[]
 ) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.id = elementId;
   document.body.appendChild(svg);
   const temp = new GitRepository(
     svg,
@@ -179,13 +177,14 @@ function branchColors(
       textColor: color,
       textOffset: { x: 3, y: -6 },
       fontSize: 12,
-      font: "Arial"
+      font: "Arial",
+      time: 1
     }
   };
 }
 
-function twoFeature(target: string, direction: Theme["direction"]) {
-  const git = makeGraph(target, direction, [
+function twoFeature(direction: Theme["direction"]) {
+  const git = makeGraph(direction, [
     { name: "master", row: 2, theme: branchColors(releaseColors[0]) }
   ]);
   git
@@ -203,8 +202,8 @@ function twoFeature(target: string, direction: Theme["direction"]) {
     .render();
 }
 
-function threeFeature(target: string) {
-  const git = makeGraph(target, "horizontal", [
+function threeFeature() {
+  const git = makeGraph("horizontal", [
     { name: "master", row: 2, theme: branchColors(releaseColors[0]) }
   ]);
   git
@@ -227,38 +226,26 @@ function threeFeature(target: string) {
     .render();
 }
 
-function twoFeatureIncremental(target: string, mode: IGitGraphOptions["mode"]) {
-  const gitgraph = makeOldGraph(target, mode);
-  const release01 = gitgraph.branch({
-    name: "master",
-    showLabel: true,
-    ...oldBranchColors(releaseColors[0].toString()),
-    column: 2
-  });
-  release01.commit("Initial commit");
-  const featureA = release01.branch({
-    name: "feature-a",
-    showLabel: true,
-    ...oldBranchColors(featureColors[0].toString()),
-    column: 1
-  });
-  featureA.commit("Implement feature WIP");
-  const featureB = featureA.branch({
-    name: "feature-b",
-    showLabel: true,
-    ...oldBranchColors(featureColors[1].toString()),
-    column: 0
-  });
-  featureB.commit("Implement feature");
-  featureA.commit("Finish feature");
-  featureA.merge(featureB);
-  featureA.merge(release01);
-  featureB.merge(release01, {
-    tag: "0.1.0",
-    dotStrokeColor: release01.color,
-    ...tag
-  });
-  return { release01, featureA, featureB };
+function twoFeatureIncremental() {
+  const git = makeGraph("horizontal", [
+    { name: "master", row: 2, theme: branchColors(releaseColors[0]) }
+  ]);
+  git
+    .commit("master")
+    .branch("feature-a", "master", 1, branchColors(featureColors[0]))
+    .microcommit("feature-a", {}, 2)
+    .branch("feature-b", "feature-a", 0, branchColors(featureColors[1]))
+    .microcommit("feature-b", {}, 2)
+    .microcommit("feature-a", {}, 2)
+    .merge("feature-b", "feature-a")
+    .microcommit("feature-b", {}, 2)
+    .merge("master", "feature-a")
+    .deleteRef("feature-a")
+    .microcommit("feature-b", {}, 2)
+    .merge("master", "feature-b")
+    .deleteRef("feature-b")
+    .tag("master", "0.1.0")
+    .render();
 }
 
 function twoFeatureInfrastructure(
@@ -958,8 +945,8 @@ function fullFeature(target: string, mode: IGitGraphOptions["mode"]) {
   return { release01, featureA, featureB, featureC };
 }
 
-function prettier(target: string) {
-  const gitgraph = makeGraph(target, "horizontal", [
+function prettier() {
+  const gitgraph = makeGraph("horizontal", [
     { name: "infrastructure", row: 0, theme: branchColors(releaseColors[0]) },
     { name: "feature-a", row: 1, theme: branchColors(featureColors[0]) }
   ]);
@@ -992,10 +979,10 @@ function prettier(target: string) {
     .render();
 }
 
-twoFeature("twoFeature", "horizontal");
-twoFeature("twoFeatureB", "vertical");
-threeFeature("threeFeature");
-twoFeatureIncremental("twoFeatureIncremental", "compact");
+twoFeature("horizontal");
+twoFeature("vertical");
+threeFeature();
+twoFeatureIncremental();
 twoFeatureInfrastructure("twoFeatureInfrastructure", "compact");
 threeFeatureMultiRelease("threeFeatureMultiRelease", "compact");
 threeFeatureMultiReleaseMaster("threeFeatureMultiReleaseMaster", "compact");
@@ -1009,4 +996,4 @@ threeHotfixCherryPick("threeHotfixCherryPick", "compact");
 threeHotfixCherryPickDirect("threeHotfixCherryPickDirect", "compact");
 threeHotfixGoodRelease("threeHotfixGoodRelease", "compact");
 fullFeature("fullFeature", "compact");
-prettier("prettier");
+prettier();

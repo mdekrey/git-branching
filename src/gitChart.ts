@@ -37,6 +37,7 @@ export interface CommitTheme {
   fontSize: number;
   font: string;
   textOffset: { x: number; y: number };
+  time: number;
 }
 
 export interface CommitParent {
@@ -139,13 +140,12 @@ export class GitRepository {
       theme || {}
     );
 
-    this.currentTime -= 0.5;
     if (finalTheme.includeBranchStart && typeof from === "string") {
       this.commit(from, {
         fillColor: transparent,
-        strokeColor: transparent
+        strokeColor: transparent,
+        time: finalTheme.defaultCommitTheme.time * 0.25
       });
-      this.currentTime -= 0.5;
     }
     const current = this.resolveCommitish(from);
     this.addBranch(
@@ -161,9 +161,9 @@ export class GitRepository {
     if (finalTheme.includeBranchStart) {
       this.commit(branchName, {
         fillColor: transparent,
-        strokeColor: transparent
+        strokeColor: transparent,
+        time: finalTheme.defaultCommitTheme.time * 0.25
       });
-      this.currentTime -= 0.5;
     }
     return this;
   }
@@ -213,7 +213,11 @@ export class GitRepository {
     return this;
   }
 
-  microcommit(branchName: string, theme?: Partial<CommitTheme>) {
+  microcommit(
+    branchName: string,
+    theme?: Partial<CommitTheme>,
+    count: number = 1
+  ) {
     const ref = this.currentRefs.get(branchName);
     if (!ref) {
       throw new Error(`Ref ${branchName} does not exist.`);
@@ -221,11 +225,13 @@ export class GitRepository {
 
     const { strokeWidth, defaultCommitTheme: { commitSize } } = ref.ref.theme;
 
-    this.commit(branchName, {
-      ...theme || {},
-      commitSize: strokeWidth + (commitSize - strokeWidth) / 3
-    });
-    this.adjustTime(-0.5);
+    for (let i = 0; i < count; i++) {
+      this.commit(branchName, {
+        ...theme || {},
+        commitSize: strokeWidth + (commitSize - strokeWidth) / 3,
+        time: 1 / 3
+      });
+    }
 
     return this;
   }
@@ -239,9 +245,10 @@ export class GitRepository {
     const commit: Commit = {
       parents,
       theme,
-      createTime: this.currentTime++,
+      createTime: (this.currentTime += theme.time * 0.5),
       row
     };
+    this.currentTime += theme.time * 0.5;
     this.allCommits.add(commit);
     return commit;
   }
@@ -261,6 +268,7 @@ export class GitRepository {
       ref.ref.theme.defaultCommitTheme,
       theme || {}
     );
+    finalTheme.time *= 0.25;
     if (typeof otherBranch === "string") {
       let otherRef = this.currentRefs.get(otherBranch);
       if (!otherRef) {
@@ -268,12 +276,11 @@ export class GitRepository {
       }
 
       if (otherRef.ref.theme.includeBranchStart) {
-        this.currentTime -= 0.5;
         this.commit(otherBranch, {
+          time: 0.25,
           fillColor: transparent,
           strokeColor: transparent
         });
-        this.currentTime -= 0.5;
         otherRef = this.currentRefs.get(otherBranch)!;
       }
       const commit = this.addCommit(
@@ -325,7 +332,7 @@ export class GitRepository {
     );
     const tags = Array.from(this.tags.entries());
     const maxRow = Math.max(...commits.map(commit => commit.row));
-    const maxTime = this.currentTime - 1;
+    const maxTime = this.currentTime + 1;
 
     const isHorizontal = this.chartTheme.direction === "horizontal";
     const rowToDistance = ({ row }: { time: number; row: number }) =>
@@ -335,7 +342,7 @@ export class GitRepository {
     const x = isHorizontal ? timeToDistance : rowToDistance;
     const y = !isHorizontal ? timeToDistance : rowToDistance;
     const commitToTimeDistance = (commit: Commit) => ({
-      time: commit.createTime + 0.5,
+      time: commit.createTime,
       row: commit.row + 0.5
     });
     const parentToTimeDistance = (parent: CommitParent & { child: Commit }) =>
@@ -349,13 +356,11 @@ export class GitRepository {
     this.element
       .style(
         "height",
-        y({ time: maxTime + 1, row: maxRow + 1 }) +
-          this.chartTheme.padding.y * 2
+        y({ time: maxTime, row: maxRow + 1 }) + this.chartTheme.padding.y * 2
       )
       .style(
         "width",
-        x({ time: maxTime + 1, row: maxRow + 1 }) +
-          this.chartTheme.padding.x * 2
+        x({ time: maxTime, row: maxRow + 1 }) + this.chartTheme.padding.x * 2
       );
 
     const base = this.element
@@ -445,13 +450,13 @@ export class GitRepository {
           .attr("x2", parent =>
             x({
               row: commitToTimeDistance(parent.current!).row,
-              time: this.currentTime
+              time: maxTime
             })
           )
           .attr("y2", parent =>
             y({
               row: commitToTimeDistance(parent.current!).row,
-              time: this.currentTime
+              time: maxTime
             })
           )
     });
