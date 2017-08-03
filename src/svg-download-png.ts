@@ -11,6 +11,8 @@ export function downloadSvgAsPng(svgElement: SVGElement) {
   img.onload = function() {
     windowUrl.revokeObjectURL(svgUrl);
     const canvas = document.createElement("canvas");
+    canvas.height = img.height;
+    canvas.width = img.width;
     const ctx = canvas.getContext("2d")!;
     ctx.drawImage(img, 0, 0);
 

@@ -569,7 +569,7 @@ export class GitRepository {
     const baseSize = base.node()!.getBoundingClientRect();
 
     this.element
-      .style("height", baseSize.height + this.chartTheme.padding.y * 2)
-      .style("width", baseSize.width + this.chartTheme.padding.x * 2);
+      .attr("height", baseSize.height + this.chartTheme.padding.y * 2)
+      .attr("width", baseSize.width + this.chartTheme.padding.x * 2);
   }
 }
