@@ -269,140 +269,39 @@ function twoFeatureInfrastructure() {
     .render();
 }
 
-function newRelease(target: string, mode: IGitGraphOptions["mode"]) {
-  const gitgraph = makeOldGraph(target, mode);
-  const release01 = gitgraph.branch({
-    name: "0.1",
-    showLabel: true,
-    ...oldBranchColors(releaseColors[0].toString()),
-    column: 1
-  });
-  release01.commit({ tag: "0.1.0", dotStrokeColor: release01.color, ...tag });
-  const release02 = release01.branch({
-    name: "0.2",
-    showLabel: true,
-    ...oldBranchColors(releaseColors[1].toString()),
-    column: 0
-  });
-
-  release02.commit(hiddenCommit);
-  release01.commit(hiddenCommit);
-  return { release01, release02 };
+function newRelease() {
+  makeGraph("horizontal", [
+    { name: "0.1", row: 1, theme: branchColors(releaseColors[0]) }
+  ])
+    .commit("0.1")
+    .tag("0.1", "0.1.0")
+    .branch("0.2", "0.1", 0, branchColors(releaseColors[1]))
+    .render();
 }
 
-function threeFeatureMultiRelease(
-  target: string,
-  mode: IGitGraphOptions["mode"]
-) {
-  const gitgraph = makeOldGraph(target, mode);
-  const release01 = gitgraph.branch({
-    name: "0.1",
-    showLabel: true,
-    ...oldBranchColors(releaseColors[0].toString()),
-    column: 3
-  });
-  release01.commit("Initial commit");
-  const featureA = release01.branch({
-    name: "feature-a",
-    showLabel: true,
-    ...oldBranchColors(featureColors[0].toString()),
-    column: 1
-  });
-  featureA.commit("Implement feature WIP");
-  const featureB = release01.branch({
-    name: "feature-b",
-    showLabel: true,
-    ...oldBranchColors(featureColors[1].toString()),
-    column: 0
-  });
-  featureB.commit("Implement feature");
-  featureA.commit("Finish feature");
-  featureA.merge(release01, {
-    tag: "0.1.0",
-    dotStrokeColor: release01.color,
-    ...tag
-  });
-  release01.merge(featureB);
-  const release02 = release01.branch({
-    name: "0.2",
-    showLabel: true,
-    ...oldBranchColors(releaseColors[1].toString()),
-    column: 2
-  });
-  const featureC = release01.branch({
-    name: "feature-c",
-    showLabel: true,
-    ...oldBranchColors(featureColors[2].toString()),
-    column: 1
-  });
-  featureC.commit("Implement feature");
-  featureB.merge(release02);
-  featureC.merge(release02, {
-    tag: "0.2.0",
-    dotStrokeColor: release02.color,
-    ...tag
-  });
-  release02.commit(hiddenCommit);
-  release01.commit(hiddenCommit);
-  return { release01, featureA, featureB, featureC };
-}
-
-function threeFeatureMultiReleaseMaster(
-  target: string,
-  mode: IGitGraphOptions["mode"]
-) {
-  const gitgraph = makeOldGraph(target, mode);
-  const master = gitgraph.branch({
-    name: "master",
-    showLabel: true,
-    ...oldBranchColors(releaseColors[0].toString()),
-    column: 2
-  });
-  master.commit("Initial commit");
-  const featureA = master.branch({
-    name: "feature-a",
-    showLabel: true,
-    ...oldBranchColors(featureColors[0].toString()),
-    column: 1
-  });
-  featureA.commit("Implement feature WIP");
-  const featureB = master.branch({
-    name: "feature-b",
-    showLabel: true,
-    ...oldBranchColors(featureColors[1].toString()),
-    column: 0
-  });
-  featureB.commit("Implement feature");
-  featureA.commit("Finish feature");
-  featureA.merge(master, {
-    tag: "0.1.0",
-    dotStrokeColor: master.color,
-    ...tag
-  });
-  master.merge(featureB);
-  const release01 = master.branch({
-    name: "0.1",
-    showLabel: true,
-    ...oldBranchColors(releaseColors[1].toString()),
-    column: 3
-  });
-  release01.commit(hiddenCommit);
-  const featureC = master.branch({
-    name: "feature-c",
-    showLabel: true,
-    ...oldBranchColors(featureColors[2].toString()),
-    column: 1
-  });
-  featureC.commit("Implement feature");
-  featureB.merge(master);
-  featureC.merge(master, {
-    tag: "0.2.0",
-    dotStrokeColor: master.color,
-    ...tag
-  });
-  master.commit(hiddenCommit);
-  release01.commit(hiddenCommit);
-  return { master, release01, featureA, featureB, featureC };
+function threeFeatureMultiRelease() {
+  makeGraph("horizontal", [
+    { name: "0.1", row: 3, theme: branchColors(releaseColors[0]) }
+  ])
+    .adjustTime(1)
+    .branch("feature-a", "0.1", 1, branchColors(featureColors[0]))
+    .commit("feature-a")
+    .branch("feature-b", "0.1", 0, branchColors(featureColors[1]))
+    .commit("feature-b")
+    .commit("feature-a")
+    .merge("0.1", "feature-a")
+    .tag("0.1", "0.1.0")
+    .deleteRef("feature-a")
+    .merge("feature-b", "0.1")
+    .branch("0.2", "0.1", 2, branchColors(releaseColors[1]))
+    .branch("feature-c", "0.2", 1, branchColors(featureColors[2]))
+    .commit("feature-c")
+    .merge("0.2", "feature-b")
+    .deleteRef("feature-b")
+    .merge("0.2", "feature-c")
+    .tag("0.2", "0.2.0")
+    .deleteRef("feature-c")
+    .render();
 }
 
 function hotfixRelease(target: string, mode: IGitGraphOptions["mode"]) {
@@ -962,9 +861,8 @@ twoFeature("vertical");
 threeFeature();
 twoFeatureIncremental();
 twoFeatureInfrastructure();
-threeFeatureMultiRelease("threeFeatureMultiRelease", "compact");
-threeFeatureMultiReleaseMaster("threeFeatureMultiReleaseMaster", "compact");
-newRelease("newRelease", "compact");
+threeFeatureMultiRelease();
+newRelease();
 hotfixRelease("hotfixRelease", "compact");
 twoHotfixBadRelease("twoHotfixBadRelease", "compact");
 twoHotfixGoodRelease("twoHotfixGoodRelease", "compact");
