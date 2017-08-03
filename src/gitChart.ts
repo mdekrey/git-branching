@@ -333,7 +333,6 @@ export class GitRepository {
       ref => ref.current
     );
     const tags = Array.from(this.tags.entries());
-    const maxRow = Math.max(...commits.map(commit => commit.row));
     const maxTime = this.currentTime + 1;
 
     const isHorizontal = this.chartTheme.direction === "horizontal";
@@ -354,16 +353,6 @@ export class GitRepository {
             time: 0,
             row: parent.child.row + 0.5
           };
-
-    this.element
-      .style(
-        "height",
-        y({ time: maxTime, row: maxRow + 1 }) + this.chartTheme.padding.y * 2
-      )
-      .style(
-        "width",
-        x({ time: maxTime, row: maxRow + 1 }) + this.chartTheme.padding.x * 2
-      );
 
     const base = this.element
       .append<SVGGElement>("g")
@@ -575,5 +564,11 @@ export class GitRepository {
           );
       }
     });
+
+    const baseSize = base.node()!.getBoundingClientRect();
+
+    this.element
+      .style("height", baseSize.height + this.chartTheme.padding.y * 2)
+      .style("width", baseSize.width + this.chartTheme.padding.x * 2);
   }
 }
