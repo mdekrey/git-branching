@@ -33,7 +33,7 @@ export function branchColors(
       strokeColor: color,
       strokeWidth: 3,
       textColor: color,
-      textOffset: { x: 3, y: -6 },
+      textOffset: { x: 4, y: -4 },
       fontSize: 12,
       font: "Arial",
       time: 1

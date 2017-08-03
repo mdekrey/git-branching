@@ -23,7 +23,7 @@ export function makeGraph(
         strokeWidth: 3,
         includeBranchStart: true,
         includeMergeTime: true,
-        textOffset: { x: 0, y: -6 },
+        textOffset: { x: 0, y: -3 },
         fontSize: 12,
         font: "Arial",
         ...branchColors(releaseColors[0])
