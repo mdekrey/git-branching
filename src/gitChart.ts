@@ -19,6 +19,7 @@ export interface BranchTheme {
   defaultCommitTheme: CommitTheme;
   strokeWidth: number;
   includeBranchStart: boolean;
+  includeBranchEnd: boolean;
   includeMergeTime: boolean;
   textColor: ColorHelper;
   fontSize: number;
@@ -158,7 +159,7 @@ export class GitRepository {
       finalTheme,
       current
     );
-    if (finalTheme.includeBranchStart) {
+    if (finalTheme.includeBranchEnd) {
       this.commit(branchName, {
         fillColor: transparent,
         strokeColor: transparent,

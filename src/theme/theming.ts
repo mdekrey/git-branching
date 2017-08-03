@@ -1,4 +1,4 @@
-import { ColorHelper } from "csx";
+import { ColorHelper, transparent } from "csx";
 import { CommitTheme, BranchTheme } from "../gitChart";
 
 export const deleteMarkerSize = 6;
@@ -19,6 +19,11 @@ export const deleteMarker: Partial<CommitTheme> = {
         .attr("stroke", "red")
         .attr("stroke-width", 3)
   }
+};
+
+export const fastforwardMarker: Partial<CommitTheme> = {
+  strokeColor: transparent,
+  fillColor: transparent
 };
 
 export function branchColors(

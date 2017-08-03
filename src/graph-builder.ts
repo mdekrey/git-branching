@@ -1,11 +1,11 @@
 import { GitRepository, IInitialRef, Theme } from "./gitChart";
 import { branchColors } from "./theme/theming";
-import { releaseColors } from "./theme/colors";
+import { serviceLineColors } from "./theme/colors";
 import { downloadSvgAsPng } from "./svg-download-png";
 
 export function makeGraph(
   name: string,
-  direction: Theme["direction"],
+  overrideTheme: Partial<Theme>,
   initialBranches: IInitialRef[]
 ) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -15,19 +15,21 @@ export function makeGraph(
   const temp = new GitRepository(
     svg,
     {
-      direction,
+      direction: "horizontal",
       rowDistance: 40,
       timeDistance: 60,
       padding: { x: 7, y: 7 },
       defaultBranchTheme: {
         strokeWidth: 3,
         includeBranchStart: true,
+        includeBranchEnd: true,
         includeMergeTime: true,
         textOffset: { x: 0, y: -3 },
         fontSize: 12,
         font: "Arial",
-        ...branchColors(releaseColors[0])
-      }
+        ...branchColors(serviceLineColors[0])
+      },
+      ...overrideTheme
     },
     initialBranches
   );

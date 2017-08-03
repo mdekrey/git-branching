@@ -1,22 +1,16 @@
-import {
-  twoFeature,
-  threeFeature,
-  twoFeatureIncremental,
-  twoFeatureInfrastructure,
-  threeFeatureMultiRelease,
-  newRelease,
-  hotfixRelease,
-  fullFeature
-} from "./samples/originals";
+import { allOriginalSamples } from "./samples/originals";
 import { prettier } from "./samples/code-formatting-infrastructure";
+import { fullExample } from "./samples/better-git-flow";
 
-twoFeature("horizontal");
-twoFeature("vertical");
-threeFeature();
-twoFeatureIncremental();
-twoFeatureInfrastructure();
-threeFeatureMultiRelease();
-newRelease();
-hotfixRelease();
-fullFeature();
+function buildHeader(title: string) {
+  const header = document.createElement("h1");
+  header.innerText = title;
+  document.body.appendChild(header);
+}
+
+buildHeader("Example");
+fullExample();
+buildHeader("Original Samples");
+allOriginalSamples();
+buildHeader("Prettier");
 prettier();

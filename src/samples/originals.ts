@@ -1,11 +1,15 @@
 import { Theme } from "../gitChart";
 import { branchColors, deleteMarker } from "../theme/theming";
-import { releaseColors, featureColors, hotfixColors } from "../theme/colors";
+import {
+  serviceLineColors,
+  featureColors,
+  hotfixColors
+} from "../theme/colors";
 import { makeGraph } from "../graph-builder";
 
 export function twoFeature(direction: Theme["direction"]) {
-  const git = makeGraph("twoFeature", direction, [
-    { name: "master", row: 2, theme: branchColors(releaseColors[0]) }
+  const git = makeGraph("twoFeature", { direction }, [
+    { name: "master", row: 2, theme: branchColors(serviceLineColors[0]) }
   ]);
   git
     .adjustTime(1)
@@ -23,8 +27,8 @@ export function twoFeature(direction: Theme["direction"]) {
 }
 
 export function threeFeature() {
-  const git = makeGraph("threeFeature", "horizontal", [
-    { name: "master", row: 2, theme: branchColors(releaseColors[0]) }
+  const git = makeGraph("threeFeature", {}, [
+    { name: "master", row: 2, theme: branchColors(serviceLineColors[0]) }
   ]);
   git
     .adjustTime(1)
@@ -47,8 +51,8 @@ export function threeFeature() {
 }
 
 export function twoFeatureIncremental() {
-  const git = makeGraph("twoFeatureIncremental", "horizontal", [
-    { name: "master", row: 2, theme: branchColors(releaseColors[0]) }
+  const git = makeGraph("twoFeatureIncremental", {}, [
+    { name: "master", row: 2, theme: branchColors(serviceLineColors[0]) }
   ]);
   git
     .adjustTime(1)
@@ -69,8 +73,8 @@ export function twoFeatureIncremental() {
 }
 
 export function twoFeatureInfrastructure() {
-  makeGraph("twoFeatureInfrastructure", "horizontal", [
-    { name: "master", row: 3, theme: branchColors(releaseColors[0]) }
+  makeGraph("twoFeatureInfrastructure", {}, [
+    { name: "master", row: 3, theme: branchColors(serviceLineColors[0]) }
   ])
     .adjustTime(1)
     .branch("infrastructure", "master", 2, branchColors(featureColors[4]))
@@ -91,8 +95,8 @@ export function twoFeatureInfrastructure() {
 }
 
 export function threeFeatureMultiRelease() {
-  makeGraph("threeFeatureMultiRelease", "horizontal", [
-    { name: "0.1", row: 3, theme: branchColors(releaseColors[0]) }
+  makeGraph("threeFeatureMultiRelease", {}, [
+    { name: "0.1", row: 3, theme: branchColors(serviceLineColors[0]) }
   ])
     .adjustTime(1)
     .branch("feature-a", "0.1", 1, branchColors(featureColors[0]))
@@ -104,7 +108,7 @@ export function threeFeatureMultiRelease() {
     .tag("0.1", "0.1.0")
     .deleteRef("feature-a")
     .merge("feature-b", "0.1")
-    .branch("0.2", "0.1", 2, branchColors(releaseColors[1]))
+    .branch("0.2", "0.1", 2, branchColors(serviceLineColors[1]))
     .branch("feature-c", "0.2", 1, branchColors(featureColors[2]))
     .commit("feature-c")
     .merge("0.2", "feature-b")
@@ -116,22 +120,22 @@ export function threeFeatureMultiRelease() {
 }
 
 export function newRelease() {
-  makeGraph("newRelease", "horizontal", [
-    { name: "0.1", row: 1, theme: branchColors(releaseColors[0]) }
+  makeGraph("newRelease", {}, [
+    { name: "0.1", row: 1, theme: branchColors(serviceLineColors[0]) }
   ])
     .commit("0.1")
     .tag("0.1", "0.1.0")
-    .branch("0.2", "0.1", 0, branchColors(releaseColors[1]))
+    .branch("0.2", "0.1", 0, branchColors(serviceLineColors[1]))
     .render();
 }
 
 export function hotfixRelease() {
-  makeGraph("hotfixRelease", "horizontal", [
-    { name: "0.1", row: 1, theme: branchColors(releaseColors[0]) }
+  makeGraph("hotfixRelease", {}, [
+    { name: "0.1", row: 1, theme: branchColors(serviceLineColors[0]) }
   ])
     .commit("0.1")
     .tag("0.1", "0.1.0")
-    .branch("0.2", "0.1", 0, branchColors(releaseColors[1]))
+    .branch("0.2", "0.1", 0, branchColors(serviceLineColors[1]))
     .branch("hotfix-1", "0.1", 2, branchColors(hotfixColors[0]))
     .microcommit("hotfix-1", {}, 2)
     .merge("0.1", "hotfix-1")
@@ -142,8 +146,8 @@ export function hotfixRelease() {
 }
 
 export function fullFeature() {
-  makeGraph("fullFeature", "horizontal", [
-    { name: "0.1", row: 3, theme: branchColors(releaseColors[0]) }
+  makeGraph("fullFeature", {}, [
+    { name: "0.1", row: 3, theme: branchColors(serviceLineColors[0]) }
   ])
     .adjustTime(1)
     .branch("feature-a", "0.1", 1, branchColors(featureColors[0]))
@@ -155,7 +159,7 @@ export function fullFeature() {
     .tag("0.1", "0.1.0")
     .deleteRef("feature-a")
     .merge("feature-b", "0.1")
-    .branch("0.2", "0.1", 2, branchColors(releaseColors[1]))
+    .branch("0.2", "0.1", 2, branchColors(serviceLineColors[1]))
     .branch("feature-c", "0.2", 1, branchColors(featureColors[2]))
     .microcommit("feature-c")
     .merge("0.2", "feature-b")
@@ -166,9 +170,20 @@ export function fullFeature() {
     .tag("0.1", "0.1.1")
     .deleteRef("hotfix-1")
     .merge("0.2", "0.1")
-    .merge("feature-c", "0.1")
+    .merge("feature-c", "0.2")
     .merge("0.2", "feature-c")
     .tag("0.2", "0.2.0")
     .deleteRef("feature-c")
     .render();
+}
+
+export function allOriginalSamples() {
+  twoFeature("horizontal");
+  threeFeature();
+  twoFeatureIncremental();
+  twoFeatureInfrastructure();
+  threeFeatureMultiRelease();
+  newRelease();
+  hotfixRelease();
+  fullFeature();
 }

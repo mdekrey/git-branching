@@ -18,8 +18,17 @@ export const featureColors = [
   rgb(9, 77, 139)
 ];
 
-// releases
-export const releaseColors = [
+// release candidates
+export const releaseCandidateColors = [
+  rgb(34, 102, 102),
+  rgb(102, 153, 153),
+  rgb(64, 127, 127),
+  rgb(13, 77, 77),
+  rgb(0, 51, 51)
+];
+
+// service lines
+export const serviceLineColors = [
   rgb(111, 206, 31),
   rgb(166, 233, 110),
   rgb(137, 219, 70),

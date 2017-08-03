@@ -1,11 +1,15 @@
 import { makeGraph } from "../graph-builder";
 import { branchColors } from "../theme/theming";
-import { releaseColors, featureColors } from "../theme/colors";
+import { serviceLineColors, featureColors } from "../theme/colors";
 import { Commit } from "../gitChart";
 
 export function prettier() {
-  const gitgraph = makeGraph("prettier", "horizontal", [
-    { name: "infrastructure", row: 0, theme: branchColors(releaseColors[0]) },
+  const gitgraph = makeGraph("prettier", {}, [
+    {
+      name: "infrastructure",
+      row: 0,
+      theme: branchColors(serviceLineColors[0])
+    },
     { name: "feature-a", row: 1, theme: branchColors(featureColors[0]) }
   ]);
   let preprettier: Commit;
