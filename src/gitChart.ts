@@ -1,6 +1,6 @@
 import { ColorHelper, transparent } from "csx";
 import { select, Selection } from "d3-selection";
-import { bind } from "./d3-binding";
+import { bind, IBindProps } from "./d3-binding";
 
 export type Direction = "horizontal" | "vertical";
 
@@ -28,7 +28,7 @@ export interface BranchTheme {
 
 export interface CommitTheme {
   label?: string;
-  specialStyle?: () => Selection<SVGElement, Commit, HTMLElement, any>;
+  specialStyle?: IBindProps<SVGElement, Commit, any, any>;
   commitSize: number;
   fillColor: ColorHelper;
   strokeColor: ColorHelper;
@@ -462,16 +462,45 @@ export class GitRepository {
     });
 
     bind({
-      target: base.append<SVGGElement>("g").selectAll("circle").data(commits),
-      onCreate: entering => entering.append<SVGCircleElement>("circle"),
-      onEach: circle =>
-        circle
-          .attr("fill", commit => commit.theme.fillColor.toString())
-          .attr("stroke", commit => commit.theme.strokeColor.toString())
-          .attr("stroke-width", commit => commit.theme.strokeWidth)
-          .attr("r", commit => commit.theme.commitSize / 2)
-          .attr("cx", commit => x(commitToTimeDistance(commit)))
-          .attr("cy", commit => y(commitToTimeDistance(commit)))
+      target: base
+        .append<SVGGElement>("g")
+        .selectAll<SVGGElement, {}>("g")
+        .data(commits),
+      onCreate: entering => entering.append<SVGGElement>("g"),
+      onEnter: entering =>
+        entering.each(function(commit) {
+          commit.theme.specialStyle && commit.theme.specialStyle.onEnter
+            ? commit.theme.specialStyle.onEnter(
+                select<SVGGElement, Commit>(this)
+              )
+            : select(this).append("circle");
+        }),
+      onEach: g =>
+        g
+          .attr("transform", commit => {
+            const loc = commitToTimeDistance(commit);
+            return `translate(${x(loc)} ${y(loc)})`;
+          })
+          .each(function(commit) {
+            commit.theme.specialStyle
+              ? commit.theme.specialStyle.onEach(
+                  select<SVGGElement, Commit>(this)
+                )
+              : select<SVGGElement, Commit>(this)
+                  .select<SVGCircleElement>("circle")
+                  .attr("fill", commit => commit.theme.fillColor.toString())
+                  .attr("stroke", commit => commit.theme.strokeColor.toString())
+                  .attr("stroke-width", commit => commit.theme.strokeWidth)
+                  .attr("r", commit => commit.theme.commitSize / 2);
+          }),
+      onExit: g =>
+        g.each(function(commit) {
+          commit.theme.specialStyle && commit.theme.specialStyle.onExit
+            ? commit.theme.specialStyle.onExit(
+                select<SVGGElement, Commit>(this)
+              )
+            : null;
+        })
     });
 
     bind({

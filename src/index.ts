@@ -4,7 +4,8 @@ import {
   BranchTheme,
   IInitialRef,
   Theme,
-  Commit
+  Commit,
+  CommitTheme
 } from "./gitChart";
 
 // hotfixes
@@ -112,6 +113,25 @@ const tag: ICommitOptions = {
   dotColor: "white",
   dotStrokeWidth: 10,
   dotSize: 9
+};
+
+const deleteMarkerSize = 6;
+const deleteMarker: Partial<CommitTheme> = {
+  specialStyle: {
+    onEnter: g => g.append("path"),
+    onEach: g =>
+      g
+        .select<SVGPathElement>("path")
+        .attr(
+          "d",
+          `M-${deleteMarkerSize},-${deleteMarkerSize}l${deleteMarkerSize *
+            2},${deleteMarkerSize *
+            2}M-${deleteMarkerSize},${deleteMarkerSize}l${deleteMarkerSize *
+            2},-${deleteMarkerSize * 2}`
+        )
+        .attr("stroke", "red")
+        .attr("stroke-width", 3)
+  }
 };
 
 function makeGraph(
@@ -262,6 +282,7 @@ function twoFeatureInfrastructure() {
     .commit("feature-a")
     .merge("master", "feature-a")
     .deleteRef("feature-a")
+    .commit("infrastructure", deleteMarker)
     .deleteRef("infrastructure")
     .merge("master", "feature-b")
     .deleteRef("feature-b")
