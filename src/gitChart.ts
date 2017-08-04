@@ -217,25 +217,39 @@ export class GitRepository {
   }
 
   microcommit(
-    branchName: string,
+    branchName: string | string[],
     theme?: Partial<CommitTheme>,
     count: number = 2
   ) {
-    const ref = this.currentRefs.get(branchName);
-    if (!ref) {
-      throw new Error(`Ref ${branchName} does not exist.`);
+    const branchNames =
+      typeof branchName === "string" ? [branchName] : branchName;
+    const refs = new Map<string, Ref>();
+    for (const branch of branchNames) {
+      const ref = this.currentRefs.get(branch);
+      if (!ref) {
+        throw new Error(`Ref ${branch} does not exist.`);
+      }
+      refs.set(branch, ref.ref);
     }
 
-    const { strokeWidth, defaultCommitTheme: { commitSize } } = ref.ref.theme;
-
     for (let i = 0; i < count; i++) {
-      this.commit(branchName, {
-        ...theme || {},
-        commitSize: strokeWidth + (commitSize - strokeWidth) / 3,
-        time: 1 / 3
-      });
-      if (theme) {
-        theme.label = "";
+      for (
+        let branchIndex = 0;
+        branchIndex < branchNames.length;
+        branchIndex++
+      ) {
+        const { strokeWidth, defaultCommitTheme: { commitSize } } = refs.get(
+          branchNames[branchIndex]
+        )!.theme;
+
+        this.commit(branchNames[branchIndex], {
+          ...theme || {},
+          commitSize: strokeWidth + (commitSize - strokeWidth) / 3,
+          time: 1 / 3 / branchNames.length
+        });
+        if (theme) {
+          theme.label = "";
+        }
       }
     }
 
