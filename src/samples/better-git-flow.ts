@@ -1,5 +1,6 @@
 import {
   branchColors,
+  conflictMarker,
   deleteMarker,
   fastforwardMarker
 } from "../theme/theming";
@@ -12,28 +13,32 @@ import {
 import { makeGraph } from "../graph-builder";
 
 export function fullExample() {
+  const featureOffset = 0
+  const releaseOffset = 5
+  const hotfixOffset = 4
+  const integrationOffset = 3
   makeGraph(
     "fullBetterGit",
     {
       direction: "vertical",
       timeDistance: 40
     },
-    [{ name: "infrastructure", row: 3, theme: branchColors(featureColors[3]) }]
+    [{ name: "infrastructure", row: featureOffset + 2, theme: branchColors(featureColors[3]) }]
   )
     .adjustTime(2)
-    .branch("feature-a", "infrastructure", 1, branchColors(featureColors[0]))
+    .branch("feature-a", "infrastructure", featureOffset + 1, branchColors(featureColors[0]))
     .microcommit("feature-a")
-    .branch("feature-b", "infrastructure", 0, branchColors(featureColors[1]))
+    .branch("feature-b", "infrastructure", featureOffset + 0, branchColors(featureColors[1]))
     .microcommit("feature-b")
     .microcommit("feature-a")
     .branch(
-      "rc0.1-1",
-      "infrastructure",
-      4,
-      branchColors(releaseCandidateColors[0])
+    "rc0.1-1",
+    "infrastructure",
+    4,
+    branchColors(releaseCandidateColors[0])
     )
     .merge("rc0.1-1", "feature-a")
-    .branch("0.1", "rc0.1-1", 5, {
+    .branch("0.1", "rc0.1-1", releaseOffset + 0, {
       ...branchColors(serviceLineColors[0]),
       includeBranchStart: false
     })
@@ -45,12 +50,16 @@ export function fullExample() {
     .commit("feature-a", deleteMarker)
     .deleteRef("feature-a")
     .merge("feature-b", "0.1")
-    .branch("feature-c", "0.1", 3, branchColors(featureColors[2]))
+    .branch("feature-c", "0.1", featureOffset + 2, branchColors(featureColors[2]))
     .microcommit("feature-c")
     .branch("rc0.2-1", "0.1", 6, branchColors(releaseCandidateColors[1]))
     .merge("rc0.2-1", "feature-b")
-    .merge("rc0.2-1", "feature-c")
-    .branch("hotfix-1", "0.1", 4, branchColors(hotfixColors[0]))
+    .commit("feature-c", conflictMarker)
+    .branch("integrate-b-c", "0.1", integrationOffset, branchColors(featureColors[4]))
+    .merge("integrate-b-c", "feature-b")
+    .merge("integrate-b-c", "feature-c")
+    .merge("rc0.2-1", "integrate-b-c")
+    .branch("hotfix-1", "0.1", hotfixOffset, branchColors(hotfixColors[0]))
     .microcommit("hotfix-1")
     .merge("0.1", "hotfix-1", fastforwardMarker)
     .tag("0.1", "0.1.1")
@@ -60,15 +69,17 @@ export function fullExample() {
     .merge("feature-b", "0.1")
     .merge("feature-c", "0.1")
     .microcommit("feature-b")
-    .merge("rc0.2-1", "feature-b")
-    .merge("rc0.2-1", "feature-c")
+    .merge("integrate-b-c", "feature-b")
+    .merge("rc0.2-1", "integrate-b-c")
+    .merge("integrate-b-c", "feature-c")
+    .merge("rc0.2-1", "integrate-b-c")
     .microcommit("feature-b")
     .commit("rc0.2-1", deleteMarker)
     .tag("rc0.2-1", "Cut feature-b from 0.2")
     .deleteRef("rc0.2-1")
-    .branch("rc0.2-2", "0.1", 6, branchColors(releaseCandidateColors[1]))
+    .branch("rc0.2-2", "0.1", releaseOffset + 1, branchColors(releaseCandidateColors[1]))
     .merge("rc0.2-2", "feature-c")
-    .branch("0.2", "rc0.2-2", 7, {
+    .branch("0.2", "rc0.2-2", releaseOffset + 2, {
       ...branchColors(serviceLineColors[1]),
       includeBranchStart: false
     })
@@ -77,11 +88,15 @@ export function fullExample() {
     .deleteRef("feature-c")
     .commit("rc0.2-2", deleteMarker)
     .deleteRef("rc0.2-2")
+    .merge("feature-b", "integrate-b-c")
+    .commit("integrate-b-c", deleteMarker)
+    .deleteRef("integrate-b-c")
+    .commit("0.2", { ...fastforwardMarker, time: 0.1 })
     .merge("feature-b", "0.2")
     .microcommit("feature-b")
-    .branch("rc0.3-1", "0.2", 8, branchColors(releaseCandidateColors[2]))
+    .branch("rc0.3-1", "0.2", releaseOffset + 3, branchColors(releaseCandidateColors[2]))
     .merge("rc0.3-1", "feature-b")
-    .branch("hotfix-2", "0.1", 4, branchColors(hotfixColors[0]))
+    .branch("hotfix-2", "0.1", hotfixOffset, branchColors(hotfixColors[0]))
     .microcommit("hotfix-2")
     .merge("0.1", "hotfix-2", fastforwardMarker)
     .tag("0.1", "0.1.2")
@@ -91,7 +106,7 @@ export function fullExample() {
     .merge("feature-b", "0.2")
     .merge("rc0.3-1", "0.2")
     .merge("rc0.3-1", "feature-b")
-    .branch("0.3", "rc0.3-1", 9, branchColors(serviceLineColors[2]))
+    .branch("0.3", "rc0.3-1", releaseOffset + 4, branchColors(serviceLineColors[2]))
     .tag("0.3", "0.3.0")
     .commit("rc0.3-1", deleteMarker)
     .deleteRef("rc0.3-1")

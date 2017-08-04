@@ -142,10 +142,11 @@ export class GitRepository {
     );
 
     if (finalTheme.includeBranchStart && typeof from === "string") {
+      this.adjustTime(finalTheme.defaultCommitTheme.time * 0.25);
       this.commit(from, {
         fillColor: transparent,
         strokeColor: transparent,
-        time: finalTheme.defaultCommitTheme.time * 0.25
+        time: 0
       });
     }
     const current = this.resolveCommitish(from);
@@ -160,10 +161,11 @@ export class GitRepository {
       current
     );
     if (finalTheme.includeBranchEnd) {
+      this.adjustTime(finalTheme.defaultCommitTheme.time * 0.25);
       this.commit(branchName, {
         fillColor: transparent,
         strokeColor: transparent,
-        time: finalTheme.defaultCommitTheme.time * 0.25
+        time: 0
       });
     }
     return this;
@@ -249,10 +251,9 @@ export class GitRepository {
     const commit: Commit = {
       parents,
       theme,
-      createTime: (this.currentTime += theme.time * 0.5),
+      createTime: (this.currentTime += theme.time),
       row
     };
-    this.currentTime += theme.time * 0.5;
     this.allCommits.add(commit);
     return commit;
   }
@@ -272,7 +273,7 @@ export class GitRepository {
       ref.ref.theme.defaultCommitTheme,
       theme || {}
     );
-    finalTheme.time *= 0.25;
+    finalTheme.time *= 0.5;
     if (typeof otherBranch === "string") {
       let otherRef = this.currentRefs.get(otherBranch);
       if (!otherRef) {
