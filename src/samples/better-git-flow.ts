@@ -340,22 +340,22 @@ export function infrastructure() {
 function integrationPrerequisiteSection(
   git: GitRepository,
   { infrastructure, featureA }: ExistingBranches<"infrastructure" | "featureA">,
-  { integrationA, featureB }: NewBranches<"integrationA" | "featureB">
+  { integration, featureB }: NewBranches<"integration" | "featureB">
 ) {
   return git
     .branch(featureB.name, infrastructure, featureB.row, featureB.theme)
     .commit(featureA, conflictMarker)
     .branch(
-      integrationA.name,
+      integration.name,
       infrastructure,
-      integrationA.row,
-      integrationA.theme
+      integration.row,
+      integration.theme
     )
-    .merge(integrationA.name, featureA)
-    .merge(featureB.name, integrationA.name)
+    .merge(integration.name, featureA)
+    .merge(featureB.name, integration.name)
     .microcommit(infrastructure, {}, 1)
-    .merge(integrationA.name, infrastructure)
-    .merge(featureB.name, integrationA.name);
+    .merge(integration.name, infrastructure)
+    .merge(featureB.name, integration.name);
 }
 
 export function integrationPrerequisite() {
@@ -374,10 +374,45 @@ export function integrationPrerequisite() {
         row: 3,
         theme: branchColors(featureColors[2])
       },
-      integrationA: {
-        name: "integration-a",
+      integration: {
+        name: "integration",
         row: 1,
         theme: branchColors(integrationBranchColors[0])
+      }
+    }
+  ).render();
+}
+
+function integrationReleaseCandidateSection(
+  git: GitRepository,
+  { featureA, featureB, rc }: ExistingBranches<"featureA" | "featureB" | "rc">,
+  { integration }: NewBranches<"integration">
+) {
+  return git
+    .merge(rc, featureB)
+    .commit(featureA, conflictMarker)
+    .branch(integration.name, featureB, integration.row, integration.theme)
+    .merge(integration.name, featureA)
+    .merge(rc, integration.name);
+}
+
+export function integrationReleaseCandidate() {
+  integrationReleaseCandidateSection(
+    makeGraph("integrationReleaseCandidate", {}, [
+      { name: "feature-a", row: 0, theme: branchColors(featureColors[0]) },
+      { name: "feature-b", row: 1, theme: branchColors(featureColors[1]) },
+      { name: "rc1.2", row: 3, theme: branchColors(releaseCandidateColors[0]) }
+    ]).adjustTime(1),
+    {
+      featureA: "feature-a",
+      featureB: "feature-b",
+      rc: "rc1.2"
+    },
+    {
+      integration: {
+        name: "integration",
+        row: 2,
+        theme: branchColors(integrationBranchColors[1])
       }
     }
   ).render();
@@ -397,33 +432,31 @@ function integrationFullSection(
     featureC
   }: NewBranches<"integrationA" | "integrationB" | "featureC">
 ) {
-  return git
-    .merge(rc, featureA)
-    .branch(featureC.name, infrastructure, featureC.row, featureC.theme)
-    .commit(featureA, conflictMarker)
-    .branch(
-      integrationA.name,
+  git.merge(rc, featureA);
+  integrationPrerequisiteSection(
+    git,
+    {
       infrastructure,
-      integrationA.row,
-      integrationA.theme
-    )
-    .merge(integrationA.name, featureA)
-    .merge(featureC.name, integrationA.name)
-    .microcommit(infrastructure, {}, 1)
-    .merge(integrationA.name, infrastructure)
-    .merge(featureC.name, integrationA.name)
-    .merge(rc, featureB)
-    .commit(featureC.name, conflictMarker)
-    .branch(integrationB.name, featureB, integrationB.row, integrationB.theme)
-    .merge(integrationB.name, featureC.name)
-    .merge(rc, integrationB.name);
+      featureA
+    },
+    {
+      featureB: featureC,
+      integration: integrationA
+    }
+  );
+  integrationReleaseCandidateSection(
+    git,
+    { featureB: featureB, featureA: featureC.name, rc },
+    { integration: integrationB }
+  );
+  return git;
 }
 
 export function integrationFull() {
   integrationFullSection(
     makeGraph("integrationFull", {}, [
-      { name: "infrastructure", row: 0, theme: branchColors(featureColors[3]) },
-      { name: "feature-a", row: 2, theme: branchColors(featureColors[0]) },
+      { name: "feature-a", row: 0, theme: branchColors(featureColors[0]) },
+      { name: "infrastructure", row: 2, theme: branchColors(featureColors[3]) },
       { name: "feature-b", row: 4, theme: branchColors(featureColors[1]) },
       { name: "rc1.2", row: 6, theme: branchColors(releaseCandidateColors[0]) }
     ]).adjustTime(1),
@@ -492,8 +525,9 @@ export function betterGit() {
   serviceLineFromReleaseCandidate();
   serviceLineHotfix();
   infrastructure();
-  integrationPrerequisite();
+  integrationReleaseCandidate();
   mainFlow();
+  integrationPrerequisite();
   integrationFull();
   gettingStartedFull();
 }
