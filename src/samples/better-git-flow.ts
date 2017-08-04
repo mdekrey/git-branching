@@ -155,3 +155,7 @@ export function gettingStartedFull() {
     .deleteRef("feature-b")
     .render();
 }
+
+export function betterGit() {
+  gettingStartedFull();
+}
