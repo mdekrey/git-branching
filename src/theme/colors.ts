@@ -20,11 +20,11 @@ export const featureColors = [
 
 // release candidates
 export const releaseCandidateColors = [
-  rgb(34, 102, 102),
-  rgb(102, 153, 153),
-  rgb(64, 127, 127),
-  rgb(13, 77, 77),
-  rgb(0, 51, 51)
+  rgb(111, 37, 111),
+  rgb(166, 111, 166),
+  rgb(138, 69, 138),
+  rgb(83, 14, 83),
+  rgb(55, 0, 55)
 ];
 
 // service lines
@@ -34,4 +34,12 @@ export const serviceLineColors = [
   rgb(137, 219, 70),
   rgb(82, 167, 12),
   rgb(60, 132, 0)
+];
+
+export const integrationBranchColors = [
+  rgb(98, 98, 98),
+  rgb(127, 127, 127),
+  rgb(112, 112, 112),
+  rgb(83, 83, 83),
+  rgb(67, 67, 67)
 ];
