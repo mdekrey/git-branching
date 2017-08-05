@@ -343,8 +343,6 @@ function integrationPrerequisiteSection(
   { integration, featureB }: NewBranches<"integration" | "featureB">
 ) {
   return git
-    .branch(featureB.name, infrastructure, featureB.row, featureB.theme)
-    .commit(featureA, conflictMarker)
     .branch(
       integration.name,
       infrastructure,
@@ -352,7 +350,7 @@ function integrationPrerequisiteSection(
       integration.theme
     )
     .merge(integration.name, featureA)
-    .merge(featureB.name, integration.name)
+    .branch(featureB.name, integration.name, featureB.row, featureB.theme)
     .microcommit(infrastructure, {}, 1)
     .merge(integration.name, infrastructure)
     .merge(featureB.name, integration.name);
@@ -362,7 +360,7 @@ export function integrationPrerequisite() {
   integrationPrerequisiteSection(
     makeGraph("integrationPrerequisite", {}, [
       { name: "feature-a", row: 0, theme: branchColors(featureColors[0]) },
-      { name: "infrastructure", row: 2, theme: branchColors(featureColors[3]) }
+      { name: "infrastructure", row: 1, theme: branchColors(featureColors[3]) }
     ]).adjustTime(1),
     {
       infrastructure: "infrastructure",
@@ -376,7 +374,7 @@ export function integrationPrerequisite() {
       },
       integration: {
         name: "integration",
-        row: 1,
+        row: 2,
         theme: branchColors(integrationBranchColors[0])
       }
     }
@@ -456,7 +454,7 @@ export function integrationFull() {
   integrationFullSection(
     makeGraph("integrationFull", {}, [
       { name: "feature-a", row: 0, theme: branchColors(featureColors[0]) },
-      { name: "infrastructure", row: 2, theme: branchColors(featureColors[3]) },
+      { name: "infrastructure", row: 1, theme: branchColors(featureColors[3]) },
       { name: "feature-b", row: 4, theme: branchColors(featureColors[1]) },
       { name: "rc1.2", row: 6, theme: branchColors(releaseCandidateColors[0]) }
     ]).adjustTime(1),
@@ -474,7 +472,7 @@ export function integrationFull() {
       },
       integrationA: {
         name: "integration-a",
-        row: 1,
+        row: 2,
         theme: branchColors(integrationBranchColors[0])
       },
       integrationB: {
