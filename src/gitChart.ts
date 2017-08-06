@@ -376,6 +376,14 @@ export class GitRepository {
         "transform",
         `translate(${this.chartTheme.padding.x} ${this.chartTheme.padding.y})`
       );
+    base
+      .append("rect")
+      .attr("fill", "transparent")
+      .attr("fill", "transparent")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", 10)
+      .attr("height", 10);
 
     bind({
       target: base
