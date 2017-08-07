@@ -745,7 +745,7 @@ export function updateServiceLine() {
         theme: branchColors(featureColors[2])
       },
       integrateAB: {
-        name: "integration-a-b",
+        name: "integration-a-c",
         row: 3,
         theme: branchColors(integrationBranchColors[2])
       }
