@@ -90,7 +90,7 @@ export function releaseIntegration() {
         row: 0,
         theme: branchColors(serviceLineColors[0])
     };
-    const integration = "integration/BA-17_PS-123";
+    const integration = "integrate/BA-17_PS-123";
     const serviceLineTags = ["2022-07-14"];
     const featureA = "feature/PS-123";
     const featureB = "feature/BA-17";
