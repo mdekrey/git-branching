@@ -1,6 +1,7 @@
 import { allOriginalSamples } from "./samples/originals";
 import { prettier } from "./samples/code-formatting-infrastructure";
 import { betterGit } from "./samples/better-git-flow";
+import { brainspace } from "./samples/brainspace";
 
 function buildHeader(title: string) {
   const header = document.createElement("h1");
@@ -14,3 +15,5 @@ buildHeader("Original Samples");
 allOriginalSamples();
 buildHeader("Prettier");
 prettier();
+buildHeader("Brainspace");
+brainspace();
